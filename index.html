@@ -330,6 +330,43 @@ footer{padding:48px 24px 32px;border-top:1px solid rgba(0,0,0,.04);max-width:var
 .calc-note{text-align:center;margin-top:16px;font-size:11px;color:var(--text3);line-height:1.5}
 @media(max-width:768px){.calc-grid{grid-template-columns:1fr}.bc-img-wrap{grid-column:span 1}}
 
+
+/* ═══ IMAGE BREAK SECTIONS ═══ */
+.img-break{max-width:var(--max);margin:0 auto var(--gap);border-radius:20px;overflow:hidden;position:relative;height:320px;background-size:cover;background-position:center}
+.img-break::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(38,36,85,.75),rgba(0,159,227,.45))}
+.img-break-content{position:relative;z-index:1;display:flex;flex-direction:column;justify-content:center;height:100%;padding:48px;color:#fff;max-width:560px}
+.img-break-content .el{background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.15)}
+.img-break-content h3{font-family:var(--serif);font-size:clamp(24px,3.5vw,36px);font-weight:700;line-height:1.15;margin-bottom:8px}
+.img-break-content p{font-size:15px;opacity:.8;line-height:1.6}
+
+/* ═══ BRANCHEN HERO IMAGES ═══ */
+.branch-hero{width:100%;height:180px;border-radius:var(--r);overflow:hidden;margin-bottom:20px;background-size:cover;background-position:center;position:relative;grid-column:1/-1}
+.branch-hero::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(38,36,85,.6))}
+.branch-hero-text{position:absolute;bottom:16px;left:20px;z-index:1;color:#fff;font-size:13px;font-weight:600;letter-spacing:.3px}
+
+/* ═══ MOBILE STICKY CTA ═══ */
+.sticky-cta{display:none;position:fixed;bottom:0;left:0;right:0;z-index:99;padding:12px 16px;background:rgba(255,255,255,.95);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid rgba(0,0,0,.06);box-shadow:0 -4px 20px rgba(0,0,0,.06);transform:translateY(100%);transition:transform .4s cubic-bezier(.22,1,.36,1)}
+.sticky-cta.show{transform:translateY(0)}
+.sticky-cta a{display:block;text-align:center;width:100%}
+.sticky-cta .btn{width:100%;justify-content:center}
+.sticky-cta-sub{font-size:10px;color:var(--text3);text-align:center;margin-top:4px}
+@media(max-width:768px){.sticky-cta{display:block}}
+
+/* ═══ BACK TO TOP ═══ */
+.btt{position:fixed;bottom:24px;right:24px;z-index:98;width:44px;height:44px;border-radius:50%;background:var(--navy);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transform:translateY(12px);transition:all .35s cubic-bezier(.22,1,.36,1);box-shadow:0 4px 16px rgba(38,36,85,.2)}
+.btt.show{opacity:1;transform:translateY(0)}
+.btt:hover{background:var(--blue);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,159,227,.3)}
+@media(max-width:768px){.btt{bottom:80px;right:16px;width:40px;height:40px}}
+
+/* ═══ QUOTE HIGHLIGHT ═══ */
+.quote-strip{max-width:var(--max);margin:0 auto calc(var(--gap) * .6);padding:0 24px}
+.quote-strip-inner{padding:32px 40px;border-left:4px solid var(--blue);background:rgba(0,159,227,.02);border-radius:0 var(--r) var(--r) 0}
+.quote-strip-text{font-family:var(--serif);font-size:clamp(18px,2.5vw,22px);font-style:italic;color:var(--navy);line-height:1.5;margin-bottom:8px}
+.quote-strip-src{font-size:12px;color:var(--text3);font-weight:500}
+
+/* ═══ IMPROVED PROOF AVATARS ═══ */
+.proof-av-ring{background:linear-gradient(135deg,var(--blue),var(--navy)) !important}
+
 /* ═══ RESPONSIVE ═══ */
 @media(max-width:768px){
   nav{padding:0 16px;height:60px}.hide-m{display:none}
@@ -344,6 +381,9 @@ footer{padding:48px 24px 32px;border-top:1px solid rgba(0,0,0,.04);max-width:var
   .stats-strip{grid-template-columns:1fr;gap:16px}
   .roi-box{grid-template-columns:1fr}.roi-right{grid-template-columns:1fr 1fr}
   .cta{padding:48px 24px;margin-left:16px;margin-right:16px}
+  .img-break{height:240px;margin-left:16px !important;margin-right:16px !important;border-radius:14px}
+  .img-break-content{padding:28px}
+  .branch-hero{height:140px}
   section{padding:0 16px;margin-bottom:64px}
   .sh{font-size:clamp(24px,6vw,34px)}
 }
@@ -765,6 +805,16 @@ footer{padding:48px 24px 32px;border-top:1px solid rgba(0,0,0,.04);max-width:var
   </div>
 </section>
 
+
+<!-- ═══ IMAGE BREAK: Erreichbarkeit ═══ -->
+<div class="img-break rv" style="background-image:url('https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=1200&q=80');margin-left:24px;margin-right:24px">
+  <div class="img-break-content">
+    <div class="el">Die Lösung</div>
+    <h3>Erreichbarkeit ist kein Luxus. Es ist Ihr Wettbewerbsvorteil.</h3>
+    <p>Unternehmen, die innerhalb von 5 Minuten zurückrufen, haben eine 21x höhere Chance, den Lead zu gewinnen.</p>
+  </div>
+</div>
+
 <!-- ═══ STATS STRIP ═══ -->
 <section>
 <div class="stats-strip rv">
@@ -785,6 +835,15 @@ footer{padding:48px 24px 32px;border-top:1px solid rgba(0,0,0,.04);max-width:var
     </div>
   </div>
 </section>
+
+
+<!-- ═══ QUOTE ═══ -->
+<div class="quote-strip rv">
+  <div class="quote-strip-inner">
+    <div class="quote-strip-text">&bdquo;Alle verkaufen Self-Service. HEKO verkauft einen Partner.&ldquo;</div>
+    <div class="quote-strip-src">Das HEKO-Versprechen &mdash; Persönliche Einrichtung, Schulung und laufende Betreuung inklusive.</div>
+  </div>
+</div>
 
 <!-- ═══ FEATURES BENTO ═══ -->
 <section id="features">
@@ -812,7 +871,7 @@ footer{padding:48px 24px 32px;border-top:1px solid rgba(0,0,0,.04);max-width:var
   <div style="max-width:var(--max);margin:0 auto">
     <div class="rv"><div class="el">Kunden wie Sie</div><h2 class="sh">Die haben gewechselt. Das sagen sie heute.</h2></div>
     <div class="proof-grid">
-      <div class="proof-card rv d1"><div class="proof-stars">&starf;&starf;&starf;&starf;&starf;</div><div class="proof-q">&bdquo;34% weniger verpasste Anrufe in 3 Monaten. Die KI-Transkription spart meinem Team täglich 2 Stunden Dokumentation.&ldquo;</div><div class="proof-a"><div class="proof-av">TK</div><div><div class="proof-name">Thomas Krüger</div><div class="proof-role">GF, Krüger Elektrotechnik GmbH</div></div></div></div>
+      <div class="proof-card rv d1"><div class="proof-stars">&starf;&starf;&starf;&starf;&starf;</div><div class="proof-q">&bdquo;34% weniger verpasste Anrufe in 3 Monaten. Die KI-Transkription spart meinem Team täglich 2 Stunden Dokumentation.&ldquo;</div><div class="proof-a"><div class="proof-av proof-av-ring">TK</div><div><div class="proof-name">Thomas Krüger</div><div class="proof-role">GF, Krüger Elektrotechnik GmbH</div></div></div></div>
       <div class="proof-card rv d2"><div class="proof-stars">&starf;&starf;&starf;&starf;&starf;</div><div class="proof-q">&bdquo;Am Montag angeschlossen, am Dienstag produktiv. Mein Team musste nichts Neues lernen, weil alles in Teams läuft.&ldquo;</div><div class="proof-a"><div class="proof-av">SB</div><div><div class="proof-name">Sandra Berger</div><div class="proof-role">COO, Berger & Partner Steuerberatung</div></div></div></div>
       <div class="proof-card rv d3"><div class="proof-stars">&starf;&starf;&starf;&starf;&starf;</div><div class="proof-q">&bdquo;Zum ersten Mal weiß ich, was am Telefon passiert. Die Dashboards zeigen mir Probleme, bevor Kunden sich beschweren.&ldquo;</div><div class="proof-a"><div class="proof-av">MF</div><div><div class="proof-name">Michael Fischer</div><div class="proof-role">Inhaber, Fischer Haustechnik</div></div></div></div>
     </div>
@@ -831,18 +890,21 @@ footer{padding:48px 24px 32px;border-top:1px solid rgba(0,0,0,.04);max-width:var
   </div>
   <div class="branch-panels">
     <div class="branch-panel active" data-branch="handwerk">
+      <div class="branch-hero" style="background-image:url('https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=800&q=80')"><div class="branch-hero-text">Handwerk &amp; Bau &mdash; 5 bis 30 Mitarbeiter</div></div>
       <div class="bp-card"><div class="bp-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20h20"/><path d="M5 20V10l7-5 7 5v10"/><path d="M9 20v-6h6v6"/></svg></div><div class="bp-title">Baustelle = erreichbar</div><div class="bp-text">Ihr Handy ist direkt in die Anlage eingebunden &mdash; per GSM, ohne App. Kunden erreichen Sie auf der Baustelle genauso wie im Büro.</div><div class="bp-hook">Native Mobilfunkintegration</div></div>
       <div class="bp-card"><div class="bp-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="12" y2="14"/></svg></div><div class="bp-title">Rückrufe nie vergessen</div><div class="bp-text">Shomi protokolliert jeden Anruf, erstellt Zusammenfassungen und plant Follow-ups. Kein Zettel, kein Vergessen.</div><div class="bp-hook">KI-Assistent Shomi</div></div>
       <div class="bp-card"><div class="bp-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg></div><div class="bp-title">ISDN-Ablösung in einem Tag</div><div class="bp-text">Wir portieren Ihre Rufnummern und richten alles ein. Sie telefonieren am nächsten Tag &mdash; ohne Unterbrechung.</div><div class="bp-hook">Nahtlose Migration</div></div>
       <div class="bp-card"><div class="bp-icon" style="background:rgba(5,150,105,.06);color:var(--green)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div><div class="bp-title">Jeder Anruf ein Auftrag</div><div class="bp-text">85% der Anrufer versuchen es kein zweites Mal. Mit intelligentem Routing geht kein Auftrag mehr verloren.</div><div class="bp-hook">Intelligentes Routing</div></div>
     </div>
     <div class="branch-panel" data-branch="stb">
+      <div class="branch-hero" style="background-image:url('https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=800&q=80')"><div class="branch-hero-text">Steuerberater &amp; Kanzleien &mdash; 3 bis 25 Mitarbeiter</div></div>
       <div class="bp-card"><div class="bp-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><div class="bp-title">DATEV-Integration</div><div class="bp-text">Eingehende Anrufe werden automatisch mit DATEV-Mandanten verknüpft. Ihr Team sieht sofort, wer anruft und welcher Vorgang offen ist.</div><div class="bp-hook">DATEV-Anbindung</div></div>
       <div class="bp-card"><div class="bp-icon" style="background:rgba(38,36,85,.04);color:var(--navy)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div><div class="bp-title">DSGVO aus der EU-Cloud</div><div class="bp-text">Mandantendaten bleiben in Europa. Verschlüsselte Verbindungen, zertifizierte Rechenzentren, revisionssicher.</div><div class="bp-hook">EU-Cloud &amp; DSGVO</div></div>
       <div class="bp-card"><div class="bp-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><div class="bp-title">Homeoffice wie im Büro</div><div class="bp-text">Ihre Mitarbeiter telefonieren von zuhause mit der Kanzlei-Nummer. Kein Privathandy, keine Weiterleitungsketten.</div><div class="bp-hook">Standortunabhängig</div></div>
       <div class="bp-card"><div class="bp-icon" style="background:rgba(217,119,6,.06);color:var(--amber)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="bp-title">Mandantenanrufe priorisieren</div><div class="bp-text">Intelligente Warteschleifen erkennen wiederkehrende Mandanten und leiten direkt zum zuständigen Berater weiter.</div><div class="bp-hook">Intelligentes Routing</div></div>
     </div>
     <div class="branch-panel" data-branch="dienst">
+      <div class="branch-hero" style="background-image:url('https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80')"><div class="branch-hero-text">Mittelständische Dienstleister &mdash; 10 bis 50 Mitarbeiter</div></div>
       <div class="bp-card"><div class="bp-icon" style="background:rgba(139,92,246,.06);color:#7c3aed"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div><div class="bp-title">Teams-Integration ohne Lizenzkosten</div><div class="bp-text">Telefonie direkt in Microsoft Teams &mdash; ohne teure Microsoft Teams Phone-Lizenz. Ihr Team arbeitet dort, wo es bereits arbeitet.</div><div class="bp-hook">Teams-Integration</div></div>
       <div class="bp-card"><div class="bp-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg></div><div class="bp-title">CRM-Anbindung</div><div class="bp-text">Salesforce, HubSpot, Pipedrive &mdash; eingehende Anrufe werden automatisch mit Kundenprofilen verknüpft und dokumentiert.</div><div class="bp-hook">14 CRM-Integrationen</div></div>
       <div class="bp-card"><div class="bp-icon" style="background:rgba(5,150,105,.06);color:var(--green)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div><div class="bp-title">Dashboards &amp; Reporting</div><div class="bp-text">Sehen Sie in Echtzeit: Wie viele Anrufe gehen ein? Wie schnell wird abgenommen? Wo gibt es Engpässe?</div><div class="bp-hook">Analyse &amp; Reporting</div></div>
@@ -1029,6 +1091,14 @@ footer{padding:48px 24px 32px;border-top:1px solid rgba(0,0,0,.04);max-width:var
     </div>
   </div>
 </section>
+<!-- ═══ IMAGE BREAK: Partnerschaft ═══ -->
+<div class="img-break rv" style="background-image:url('https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&w=1200&q=80');margin-left:24px;margin-right:24px;height:240px">
+  <div class="img-break-content">
+    <h3>Wir machen alles. Sie telefonieren einfach.</h3>
+    <p>Persönliche Einrichtung. Rufnummern-Portierung. KI-Konfiguration. Team-Schulung. Laufende Betreuung.</p>
+  </div>
+</div>
+
 <div class="cta rv" id="cta">
   <div class="el" style="background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.1);color:rgba(255,255,255,.6)">Nächster Schritt</div>
   <h2 class="sh" style="color:#fff">In 30 Minuten wissen Sie, ob Ihre Anlage Sie Kunden kostet.</h2>
@@ -1501,10 +1571,57 @@ function closeLegal(){
     };
   }
 
-  // Konfiguration geladen
+  
+// ═══ MOBILE STICKY CTA ═══
+(function(){
+  var sticky = document.getElementById('stickyCta');
+  var btt = document.getElementById('btt');
+  var hero = document.querySelector('.hero');
+  var cta = document.querySelector('.cta');
+  if(!sticky || !hero) return;
+  
+  var io = new IntersectionObserver(function(entries){
+    var heroVisible = false;
+    var ctaVisible = false;
+    entries.forEach(function(e){
+      if(e.target === hero) heroVisible = e.isIntersecting;
+      if(e.target === cta) ctaVisible = e.isIntersecting;
+    });
+  });
+  
+  window.addEventListener('scroll', function(){
+    var y = window.scrollY;
+    var heroH = hero.offsetHeight;
+    // Show sticky CTA after scrolling past hero
+    if(y > heroH && y < document.body.scrollHeight - window.innerHeight - 300){
+      sticky.classList.add('show');
+    } else {
+      sticky.classList.remove('show');
+    }
+    // Back to top
+    if(btt){
+      if(y > 600) btt.classList.add('show');
+      else btt.classList.remove('show');
+    }
+  });
+})();
+
+// Konfiguration geladen
   console.log('%cHEKO Voice Landingpage geladen', 'color:#009fe3;font-weight:bold;font-size:14px');
   console.log('Config:', JSON.stringify(c, null, 2));
 })();
 </script>
+
+<!-- ═══ MOBILE STICKY CTA ═══ -->
+<div class="sticky-cta" id="stickyCta">
+  <a href="#cta" class="btn btn-blue btn-m" onclick="dataLayer.push({'event':'cta_click','cta_location':'sticky','cta_type':'system-check'})">Kostenloser System-Check &rarr;</a>
+  <div class="sticky-cta-sub">30 Min. &middot; Kostenlos &middot; Unverbindlich</div>
+</div>
+
+<!-- ═══ BACK TO TOP ═══ -->
+<button class="btt" id="btt" onclick="window.scrollTo({top:0})" aria-label="Nach oben scrollen">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+</button>
+
 </body>
 </html>
