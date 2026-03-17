@@ -83,6 +83,10 @@ window.HEKO_CONFIG = {
   // ── Google Tag Manager ──────────────────────────────────
   gtmId: 'GTM-XXXXXXX',           // GTM-Container-ID hier eintragen
 
+  // ── Google Ads Conversion Tracking ────────────────────
+  gadsId: 'AW-364517411',         // Google Ads Tag-ID
+  gadsConversionLabel: '',        // Conversion-Label (aus Google Ads → Conversions → Tag-Details)
+
   // ── CTA-Links (Calendly, Typeform, etc.) ────────────────
   systemCheckUrl: 'https://calendly.com/DEIN-LINK',       // Haupt-CTA: System-Check
   demoUrl:        'https://calendly.com/DEIN-DEMO-LINK',  // Sekundär-CTA: Demo
@@ -123,6 +127,25 @@ window.HEKO_CONFIG = {
 <!-- GA4 (optional, nur wenn ga4Id gesetzt und nicht über GTM läuft) -->
 <script>
 (function(){var c=window.HEKO_CONFIG;if(!c.ga4Id)return;var s=document.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtag/js?id='+c.ga4Id;document.head.appendChild(s);window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config',c.ga4Id);})();
+</script>
+
+<!-- Google Ads Conversion Tracking (gtag.js) -->
+<script>
+(function(){
+  var c = window.HEKO_CONFIG;
+  if(!c.gadsId) return;
+  var s = document.createElement('script');
+  s.async = true;
+  s.src = 'https://www.googletagmanager.com/gtag/js?id=' + c.gadsId;
+  document.head.appendChild(s);
+  s.onload = function(){
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    window.gtag = gtag;
+    gtag('js', new Date());
+    gtag('config', c.gadsId);
+  };
+})();
 </script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -682,7 +705,7 @@ footer{padding:48px 24px 32px;border-top:1px solid rgba(0,0,0,.04);max-width:var
 .pain-stat span{display:block;font-size:10px;font-weight:400;color:var(--text3);margin-top:2px;font-style:italic}
 </style></defs><path class="cls-2" d="M0,95.73c0,6.1,6.1,6.1,6.1,6.1h7.95c.07,0,5.82-.05,6.07-5.73V61.06h57.07v35.03c.25,5.69,6,5.73,6.07,5.73h7.95s6.1,0,6.1-6.1V6.1C97.32,0,91.22,0,91.22,0h-7.94s-5.83,.02-6.08,5.73V40.77H20.12V5.73C19.87,.02,14.05,0,14.05,0H6.1S0,0,0,6.1V95.73H0Z"/><path class="cls-2" d="M211.98,95.73c0,6.1,6.1,6.1,6.1,6.1h8.11c.07,0,5.96-.04,6.08-5.92v-29.47l45.14,33.98c1.08,.72,2.48,1.39,3.77,1.41h26.07c1.31-.27,3.48-1.32-3.38-6.02l-12.62-9.05h-.03l-51.49-35.76,51.44-35.84-.03,.02,12.73-9.08C312.38,.16,306.89,0,306.49,0h-24.35c-1.83,0-3.65,.69-5.02,1.68-.62,.44-1.46,1.06-2.2,1.61l-42.64,32.1V5.92C232.15,.01,226.19,0,226.19,0h-8.11S211.98,0,211.98,6.1V95.73h0Z"/><path class="cls-2" d="M414.88,81.53v-24.87h-20.12v24.87h-60.54V20.3h24.55s-.03,0-.03,0V0h-24.53c-5.78,0-10.58,2.05-14.4,6.16-3.82,4.11-5.72,8.82-5.72,14.14v61.24c0,2.43,.23,4.68,.69,6.77,2.2,9.02,8.67,13.53,19.43,13.53h60.54c13.41,0,20.12-6.77,20.12-20.3"/><path class="cls-1" d="M414.88,50.91V20.3c0-5.55-1.94-10.32-5.81-14.31C405.19,2,400.42,0,394.76,0h-30.27V20.3h30.27v30.62h20.12Z"/><path class="cls-2" d="M189.92,101.83s6.1,0,6.1-6.1v-8.11c0-5.27-4.55-5.99-5.79-6.08h-16.29s-38.29,0-38.29,0v-20.47h14.46v.03h31.38v-.03h8.96c1.49-.17,5.57-1.07,5.57-6.06v-8.13c0-5.69-5.3-6.07-6.02-6.1h-8.51s-31.32,0-31.32,0h0s-.06-.01-.06-.01v.02h-14.46V20.3h14.46v.02h.06s31.32-.01,31.32-.01h0s8.52,0,8.52,0c.77-.03,6-.44,6-6.1V6.1C196.02,0,189.92,0,189.92,0h-39.75s-28.72,0-28.72,0c0,0-6.1,0-6.1,6.1V95.73c0,6.1,6.1,6.1,6.1,6.1h68.46Z"/></svg></div>
   <div class="nav-r">
-    <a href="https://calendly.com/DEIN-DEMO-LINK" target="_blank" rel="noopener" class="btn btn-ghost btn-s hide-m" onclick="dataLayer.push({'event':'cta_click','cta_location':'nav','cta_type':'demo'})">Demo ansehen</a>
+    <a href="https://calendly.com/DEIN-DEMO-LINK" target="_blank" rel="noopener" class="btn btn-ghost btn-s hide-m" onclick="dataLayer.push({'event':'cta_click','cta_location':'nav','cta_type':'demo'});trackConversion('demo_click')">Demo ansehen</a>
     <a href="#rechner" class="btn btn-ghost btn-s hide-m">Rechner</a>
     <a href="#cta" class="btn btn-dark btn-s" onclick="dataLayer.push({'event':'cta_click','cta_location':'nav','cta_type':'system-check'})">Kostenloser System-Check &rarr;</a>
   </div>
@@ -1420,6 +1443,25 @@ counters.forEach(c=>counterObserver.observe(c));
 
 <!-- ═══ URL-KONFIGURATION ANWENDEN ═══ -->
 <script>
+// ═══ GOOGLE ADS CONVERSION TRACKING ═══
+function trackConversion(eventType){
+  var c = window.HEKO_CONFIG;
+  if(!c || !c.gadsId || typeof gtag !== 'function') return;
+  // Conversion-Event an Google Ads senden
+  gtag('event', 'conversion', {
+    'send_to': c.gadsId + (c.gadsConversionLabel ? '/' + c.gadsConversionLabel : ''),
+    'event_category': 'lead',
+    'event_label': eventType
+  });
+  // Auch als Custom Event für GA4/GTM
+  dataLayer.push({'event':'ads_conversion','conversion_type':eventType});
+}
+
+// Conversion-Tracking an alle System-Check CTAs hängen
+document.querySelectorAll('a[href="#cta"]').forEach(function(a){
+  a.addEventListener('click', function(){ trackConversion('system_check_click'); });
+});
+
 // ═══ INVESTMENT CALCULATOR ═══
 function calcInvest(){
   var calls=document.getElementById('csCalls').value;
@@ -1498,6 +1540,7 @@ function submitLeadMagnet(){
 
   document.getElementById('lmFormWrap').style.display = 'none';
   document.getElementById('lmSuccess').style.display = 'block';
+  trackConversion('lead_magnet_download');
 }
 
 // ═══ COOKIE CONSENT ═══
@@ -1534,6 +1577,20 @@ function fireTrackingScripts(){
   if(c.fbPixelId && typeof fbq === 'undefined'){
     !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
     fbq('init',c.fbPixelId);fbq('track','PageView');
+  }
+
+  // Google Ads nachladen (falls noch nicht geladen)
+  if(c.gadsId && typeof gtag === 'undefined'){
+    var gs=document.createElement('script');gs.async=true;
+    gs.src='https://www.googletagmanager.com/gtag/js?id='+c.gadsId;
+    document.head.appendChild(gs);
+    gs.onload=function(){
+      window.dataLayer=window.dataLayer||[];
+      function gtag(){dataLayer.push(arguments);}
+      window.gtag=gtag;
+      gtag('js',new Date());
+      gtag('config',c.gadsId);
+    };
   }
 }
 
