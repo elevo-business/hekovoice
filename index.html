@@ -102,7 +102,7 @@ window.HEKO_CONFIG = {
   fbPixelId: '',                   // Facebook Pixel-ID (leer = deaktiviert)
 
   // ── Google Analytics 4 (optional, falls nicht über GTM) ─
-  ga4Id: '',                       // GA4 Measurement-ID (leer = deaktiviert)
+  ga4Id: 'G-744VWWPK9B',                       // GA4 Measurement-ID
 
   // ── Lead-Magnet Webhook (Zapier/n8n/Make) ──────────────
   webhookUrl: '',                  // Webhook-URL für Lead-Magnet E-Mails (leer = nur DataLayer)
@@ -124,27 +124,25 @@ window.HEKO_CONFIG = {
 (function(){var c=window.HEKO_CONFIG;if(!c.fbPixelId)return;!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init',c.fbPixelId);fbq('track','PageView');})();
 </script>
 
-<!-- GA4 (optional, nur wenn ga4Id gesetzt und nicht über GTM läuft) -->
-<script>
-(function(){var c=window.HEKO_CONFIG;if(!c.ga4Id)return;var s=document.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtag/js?id='+c.ga4Id;document.head.appendChild(s);window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config',c.ga4Id);})();
-</script>
-
-<!-- Google Ads Conversion Tracking (gtag.js) -->
+<!-- GA4 + Google Ads (gtag.js — einmal laden, beide konfigurieren) -->
 <script>
 (function(){
   var c = window.HEKO_CONFIG;
-  if(!c.gadsId) return;
+  // Primäre ID bestimmen (GA4 hat Vorrang, da häufiger)
+  var primaryId = c.ga4Id || c.gadsId;
+  if(!primaryId) return;
   var s = document.createElement('script');
   s.async = true;
-  s.src = 'https://www.googletagmanager.com/gtag/js?id=' + c.gadsId;
+  s.src = 'https://www.googletagmanager.com/gtag/js?id=' + primaryId;
   document.head.appendChild(s);
-  s.onload = function(){
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    window.gtag = gtag;
-    gtag('js', new Date());
-    gtag('config', c.gadsId);
-  };
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  window.gtag = gtag;
+  gtag('js', new Date());
+  // GA4 konfigurieren
+  if(c.ga4Id) gtag('config', c.ga4Id);
+  // Google Ads konfigurieren
+  if(c.gadsId) gtag('config', c.gadsId);
 })();
 </script>
 
@@ -1580,17 +1578,23 @@ function fireTrackingScripts(){
   }
 
   // Google Ads nachladen (falls noch nicht geladen)
-  if(c.gadsId && typeof gtag === 'undefined'){
-    var gs=document.createElement('script');gs.async=true;
-    gs.src='https://www.googletagmanager.com/gtag/js?id='+c.gadsId;
-    document.head.appendChild(gs);
-    gs.onload=function(){
-      window.dataLayer=window.dataLayer||[];
-      function gtag(){dataLayer.push(arguments);}
-      window.gtag=gtag;
-      gtag('js',new Date());
-      gtag('config',c.gadsId);
-    };
+  if(c.gadsId && typeof gtag !== 'undefined'){
+    gtag('config', c.gadsId);
+  } else if(c.gadsId || c.ga4Id){
+    var pid = c.ga4Id || c.gadsId;
+    if(!document.querySelector('script[src*="gtag/js"]')){
+      var gs=document.createElement('script');gs.async=true;
+      gs.src='https://www.googletagmanager.com/gtag/js?id='+pid;
+      document.head.appendChild(gs);
+      gs.onload=function(){
+        window.dataLayer=window.dataLayer||[];
+        function gtag(){dataLayer.push(arguments);}
+        window.gtag=gtag;
+        gtag('js',new Date());
+        if(c.ga4Id) gtag('config',c.ga4Id);
+        if(c.gadsId) gtag('config',c.gadsId);
+      };
+    }
   }
 }
 
