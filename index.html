@@ -235,27 +235,6 @@ section{position:relative;padding:0 24px;margin-bottom:var(--gap)}
 .stat-src{font-size:11px;opacity:.4;margin-top:4px}
 .stat-label{font-size:13px;opacity:.7;margin-top:2px}
 
-/* ═══ MID-CTA ═══ */
-.mid-cta{max-width:var(--max);margin:0 auto 40px;padding:36px 32px;background:linear-gradient(135deg,rgba(0,159,227,.03),rgba(38,36,85,.03));border:1px solid rgba(0,159,227,.1);border-radius:16px;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
-.mid-cta-text{max-width:520px}
-.mid-cta-text h3{font-family:var(--serif);font-size:20px;font-weight:700;color:var(--navy);margin-bottom:4px}
-.mid-cta-text p{font-size:14px;color:var(--text2);line-height:1.6}
-.mid-cta-actions{display:flex;gap:12px;align-items:center;flex-shrink:0;flex-wrap:wrap}
-.mid-cta-phone{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--navy);text-decoration:none;padding:13px 24px;border-radius:50px;border:1.5px solid rgba(0,0,0,.08);transition:all .35s cubic-bezier(.22,1,.36,1)}
-.mid-cta-phone:hover{border-color:rgba(0,159,227,.2);background:rgba(0,159,227,.03)}
-.mid-cta-phone svg{flex-shrink:0}
-@media(max-width:768px){.mid-cta{flex-direction:column;text-align:center;padding:28px 20px}.mid-cta-actions{justify-content:center}}
-
-/* ═══ HERO PHONE ═══ */
-.hero-phone{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--text2);text-decoration:none;margin-top:12px;transition:color .3s}
-.hero-phone:hover{color:var(--blue)}
-.hero-phone svg{flex-shrink:0;color:var(--blue)}
-
-/* ═══ URGENCY ═══ */
-.urgency{display:inline-flex;align-items:center;gap:8px;margin-top:16px;padding:8px 18px;border-radius:50px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);font-size:13px;color:rgba(255,255,255,.7);animation:urgPulse 3s ease-in-out infinite}
-.urgency-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 8px rgba(5,150,105,.5)}
-@keyframes urgPulse{0%,100%{opacity:.7}50%{opacity:1}}
-
 /* ═══ HOW IT WORKS ═══ */
 .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;max-width:var(--max);margin:28px auto 0}
 .step{padding:32px 24px;background:#fff;border:1px solid rgba(0,0,0,.05);border-radius:var(--r);position:relative;transition:all .4s cubic-bezier(.22,1,.36,1)}
@@ -409,30 +388,196 @@ footer{padding:48px 24px 32px;border-top:1px solid rgba(0,0,0,.04);max-width:var
 /* ═══ IMPROVED PROOF AVATARS ═══ */
 .proof-av-ring{background:linear-gradient(135deg,var(--blue),var(--navy)) !important}
 
+
+/* ═══ TECH AESTHETIC ═══ */
+body::before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(0,159,227,.018) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,159,227,.018) 1px,transparent 1px);
+  background-size:48px 48px}
+
+.el{font-family:'SF Mono',SFMono-Regular,Consolas,'Liberation Mono',Menlo,monospace;font-size:11px;letter-spacing:1.5px}
+
+.step-num,.pain-num{font-family:'SF Mono',SFMono-Regular,Consolas,monospace}
+
+.bc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--blue),transparent);opacity:0;transition:opacity .4s}
+.bc:hover::before{opacity:1}
+.bc{position:relative;overflow:hidden}
+
+.stat-val,.sp-num{font-family:'SF Mono',SFMono-Regular,Consolas,monospace;letter-spacing:-1px}
+
+.calc-result-val{font-family:'SF Mono',SFMono-Regular,Consolas,monospace}
+.roi-n{font-family:'SF Mono',SFMono-Regular,Consolas,monospace}
+
+.vs-header{font-family:'SF Mono',SFMono-Regular,Consolas,monospace;letter-spacing:1px}
+
+/* Subtle scan line effect on image breaks */
+.img-break::before{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.03) 2px,rgba(0,0,0,.03) 4px);
+  mix-blend-mode:multiply}
+
+/* Uniform image containers */
+.bc-img{width:100%;border-radius:10px;margin-top:14px;box-shadow:0 4px 16px rgba(0,0,0,.06);display:block;
+  aspect-ratio:16/10;object-fit:cover;object-position:top}
+.bc-img-wrap img{aspect-ratio:16/9;object-fit:cover;object-position:top}
+.branch-hero{aspect-ratio:16/5;height:auto;min-height:140px}
+
+
 /* ═══ RESPONSIVE ═══ */
 @media(max-width:768px){
-  nav{padding:0 16px;height:60px}.hide-m{display:none}
-  .hero{grid-template-columns:1fr;padding:100px 16px 48px;gap:32px;text-align:center}
-  .hero-p,.hero-ctas{margin-left:auto;margin-right:auto}
-  .hero-ctas{justify-content:center}
-  .hero-trust{justify-content:center}
-  .hero-r{max-width:360px;margin:0 auto}
-  .sp-banner{gap:24px;flex-wrap:wrap}.sp-num{font-size:22px}
-  .pain-grid,.steps,.proof-grid{grid-template-columns:1fr}
-  .bento{grid-template-columns:1fr}.bc.span-2{grid-column:span 1}
-  .stats-strip{grid-template-columns:1fr;gap:16px}
-  .roi-box{grid-template-columns:1fr}.roi-right{grid-template-columns:1fr 1fr}
-  .cta{padding:48px 24px;margin-left:16px;margin-right:16px}
-  .img-break{height:240px;margin-left:16px !important;margin-right:16px !important;border-radius:14px}
-  .img-break-content{padding:28px}
-  .branch-hero{height:140px}
-  section{padding:0 16px;margin-bottom:64px}
-  .sh{font-size:clamp(24px,6vw,34px)}
+  :root{--gap:56px;--r:12px}
+  body::before{background-size:32px 32px}
+  nav{padding:0 16px;height:56px}
+  .hide-m{display:none}
+  .nav-logo svg{height:20px}
+
+  /* Hero — full-width immersive */
+  .hero{grid-template-columns:1fr;padding:88px 20px 40px;gap:24px;text-align:left}
+  .hero h1{font-size:clamp(28px,7vw,36px);line-height:1.08}
+  .hero-p{font-size:15px;line-height:1.65;margin:12px 0 20px;max-width:none}
+  .hero-ctas{justify-content:stretch}
+  .hero-ctas .btn{width:100%;justify-content:center;padding:14px 24px}
+  .hero-trust{justify-content:flex-start;font-size:11px;gap:8px;flex-wrap:wrap}
+  .hero-r{max-width:100%;margin:8px 0 0}
+  .voice-sim{max-width:100%;border-radius:14px;box-shadow:0 20px 48px rgba(38,36,85,.08)}
+
+  /* Sections — tight, immersive */
+  section{padding:0 20px;margin-bottom:var(--gap)}
+  .sh{font-size:clamp(22px,6vw,30px);line-height:1.12}
+  .sd{font-size:14.5px;line-height:1.65}
+  .el{font-size:10px;padding:4px 12px;letter-spacing:1.2px}
+
+  /* Social proof — horizontal scroll on mobile */
+  .sp-banner{gap:0;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scroll-snap-type:x mandatory;padding:16px 20px;margin:0 -20px var(--gap)}
+  .sp-item{flex:0 0 auto;min-width:140px;scroll-snap-align:center;padding:0 16px}
+  .sp-num{font-size:24px}
+  .sp-label{font-size:10px}
+
+  /* Pain — card stack with swipe feel */
+  .pain-grid{grid-template-columns:1fr;gap:12px}
+  .pain-card{padding:20px;border-left:3px solid transparent;transition:border-color .3s}
+  .pain-card:nth-child(1){border-left-color:var(--red)}
+  .pain-card:nth-child(2){border-left-color:var(--amber)}
+  .pain-card:nth-child(3){border-left-color:var(--navy)}
+  .pain-num{font-size:28px}
+  .pain-title{font-size:14px}
+  .pain-text{font-size:13px}
+  .pain-stat{font-size:11px}
+
+  /* Stats strip — compact, impactful */
+  .stats-strip{grid-template-columns:1fr;gap:12px;padding:24px 20px;border-radius:14px;margin-left:20px;margin-right:20px}
+  .stat-val{font-size:26px}
+  .stat-label{font-size:12px}
+  .stat-src{font-size:10px}
+
+  /* Steps — vertical timeline feel */
+  .steps{grid-template-columns:1fr;gap:0}
+  .step{border-radius:0;border-bottom:1px solid rgba(0,0,0,.04);padding:24px 20px 24px 20px;position:relative}
+  .step:first-child{border-radius:var(--r) var(--r) 0 0}
+  .step:last-child{border-radius:0 0 var(--r) var(--r);border-bottom:none}
+  .step::before{height:100%;width:3px;top:0;left:0;right:auto;border-radius:0;transform:scaleY(0);transform-origin:top}
+  .step:hover::before{transform:scaleY(1)}
+  .step-num{font-size:32px}
+  .step-title{font-size:15px}
+  .step-text{font-size:13px}
+
+  /* Bento — single column, uniform cards */
+  .bento{grid-template-columns:1fr;gap:12px}
+  .bc.span-2{grid-column:span 1}
+  .bc{padding:20px;border-radius:var(--r)}
+  .bc-img{border-radius:8px;margin-top:12px}
+  .bc-t{font-size:14px}
+  .bc-d{font-size:12.5px}
+
+  /* Image breaks — edge-to-edge on mobile */
+  .img-break{height:auto;min-height:200px;margin-left:0 !important;margin-right:0 !important;border-radius:0;max-width:none}
+  .img-break-content{padding:32px 20px}
+  .img-break-content h3{font-size:clamp(20px,5vw,28px)}
+
+  /* Branchen */
+  .branch{padding:0 20px}
+  .branch-tabs{gap:6px;overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;padding-bottom:4px}
+  .branch-tab{white-space:nowrap;flex-shrink:0;padding:8px 18px;font-size:13px}
+  .branch-panel.active{grid-template-columns:1fr}
+  .branch-hero{min-height:120px;border-radius:var(--r)}
+
+  /* Testimonials */
+  .proof-grid{grid-template-columns:1fr;gap:12px}
+  .proof-card{padding:20px}
+  .proof-q{font-size:15px}
+
+  /* ROI box */
+  .roi-box{grid-template-columns:1fr;border-radius:var(--r)}
+  .roi-left{border-right:none;border-bottom:1px solid rgba(0,0,0,.04);padding:24px 20px}
+  .roi-right{grid-template-columns:1fr 1fr;padding:24px 20px;gap:12px}
+  .roi-n{font-size:24px}
+  .roi-l{font-size:11px}
+
+  /* Calculator */
+  .calc{padding:0 20px}
+  .calc-box{padding:24px 20px;border-radius:var(--r)}
+  .calc-grid{grid-template-columns:1fr;gap:24px}
+  .calc-result{padding:20px 16px}
+  .calc-result-val{font-size:24px}
+
+  /* Pricing — swipeable cards */
+  .pricing{padding:0 20px}
+  .price-cards{grid-template-columns:1fr;gap:12px}
+  .price-card{padding:24px 20px}
+
+  /* CTA — full-bleed */
+  .cta{padding:40px 20px;margin:0;border-radius:0;max-width:none}
+  .cta .sh{font-size:clamp(22px,5.5vw,28px)}
+  .cta-row{flex-direction:column;align-items:stretch}
+  .cta-row .btn{justify-content:center}
+
+  /* Quote strip */
+  .quote-strip{padding:0 20px}
+  .quote-strip-inner{padding:24px;border-radius:0 var(--r) var(--r) 0}
+  .quote-strip-text{font-size:clamp(16px,4vw,20px)}
+
+  /* FAQ */
+  .faq{padding:0 20px}
+  .faq-q h3{font-size:15px}
+
+  /* Lead magnet */
+  .lead-magnet{padding:0 20px}
+  .lm-box{grid-template-columns:1fr;padding:28px 20px;gap:20px}
+  .lm-visual{display:none}
+  .lm-form{flex-direction:column;gap:10px}
+  .lm-content h3{font-size:20px}
+
+  /* Image wrap (warteschlangen-screenshot) */
+  .bc-img-wrap{grid-column:span 1;border-radius:var(--r)}
+  .bc-img-caption{padding:16px}
+
+  /* Footer */
+  .footer-grid{grid-template-columns:1fr 1fr;gap:20px}
+  footer{padding:28px 20px}
+
+  /* Sticky CTA — cleaner on mobile */
+  .sticky-cta{padding:10px 20px;backdrop-filter:blur(16px) saturate(1.4)}
+  .sticky-cta .btn{padding:12px 20px;font-size:14px;border-radius:10px}
 }
+
 @media(max-width:480px){
-  .hero h1{font-size:28px}.btn-m{padding:11px 22px;font-size:14px}.btn-l{padding:14px 28px;font-size:15px}
+  .hero h1{font-size:26px}
+  .hero-ctas .btn{font-size:13.5px;padding:13px 20px}
+  .sp-item{min-width:120px}
   .roi-right{grid-template-columns:1fr}
   .sticky-text{display:none}
+  .pain-card{padding:18px}
+  .img-break-content{padding:24px 16px}
+  .cta{padding:32px 16px}
+  .btn-m{padding:11px 20px;font-size:13.5px}
+  .btn-l{padding:13px 24px;font-size:14px}
+  .footer-grid{grid-template-columns:1fr}
+}
+
+@media(max-width:360px){
+  .hero h1{font-size:24px}
+  .sh{font-size:22px}
+  .stats-strip{margin-left:12px;margin-right:12px}
 }
 
 /* ═══ VOICE SIMULATION ═══ */
@@ -606,50 +751,26 @@ footer{padding:48px 24px 32px;border-top:1px solid rgba(0,0,0,.04);max-width:var
   <div class="nav-logo"><svg id="Ebene_1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 414.88 101.83"><defs><style>.cls-1{fill:#009fe3;}.cls-2{fill:#262455;}
 /* ═══ MOBILE OPTIMIZATION ═══ */
 @media(max-width:768px){
-  :root{--gap:72px}
-  .hero{padding:100px 16px 48px;gap:28px}
-  .hero h1{font-size:32px;letter-spacing:-.3px}
-  .hero-p{font-size:15.5px;margin-bottom:24px}
-  .hero-ctas .btn{font-size:14px;padding:12px 24px}
-  .trust{margin-top:32px;padding-top:20px}
-  .trust-row{flex-wrap:wrap;gap:8px}
-  .tl{padding:6px 10px;border-right:none}
+  .trust{margin-top:24px;padding-top:16px}
+  .trust-row{flex-wrap:wrap;gap:6px}
+  .tl{padding:5px 10px;border-right:none}
   .tl-img{height:16px}
-  .demo-bd{padding:14px}
-  .dc{padding:10px;gap:10px}
-  .dc-av{width:32px;height:32px;font-size:11px}
+  .demo-bd{padding:12px}
+  .dc{padding:10px;gap:8px}
+  .dc-av{width:30px;height:30px;font-size:10px}
   .dc-name{font-size:12px}
   .dc-meta{font-size:10px}
-  .dw{padding:12px}
-  .tl-l{padding:6px 8px;font-size:11px}
-  .d-crm{font-size:10px;padding:5px 8px}
-  section,.sw{padding:0 16px}
-  .sh{font-size:26px}
-  .sd{font-size:15px}
-  .pain-grid,.steps,.proof-grid{gap:10px}
-  .pain-card,.step,.proof-card{padding:22px}
-  .pain-num{font-size:30px}
-  .pain-title{font-size:14px}
-  .pain-text,.step-text,.bc-d,.proof-q{font-size:13px}
-  .step-num{font-size:36px}
-  .bento{gap:10px;margin-top:28px}
-  .bc{padding:22px}
+  .dw{padding:10px}
+  .tl-l{padding:5px 8px;font-size:10px}
+  .d-crm{font-size:10px;padding:4px 8px}
   .sg{grid-template-columns:repeat(3,1fr);gap:6px}
   .sc{padding:10px}
   .sc-n{font-size:20px}
-  .roi-box{padding:24px;gap:28px}
-  .roi-right{gap:8px}
-  .roi-n{font-size:26px}
-  .roi-m{padding:16px}
-  .cta{padding:40px 16px;margin:0 12px 0;border-radius:12px 12px 0 0}
-  .cta .sh{font-size:24px}
-  footer{padding:28px 16px}
+  .roi-m{padding:14px}
 }
 @media(max-width:400px){
-  .hero h1{font-size:28px}
   .sg{grid-template-columns:1fr 1fr 1fr}
   .sc-n{font-size:18px}
-  .roi-right{grid-template-columns:1fr 1fr}
 }
 
 /* ═══ VOICE SIMULATION ═══ */
@@ -744,10 +865,6 @@ footer{padding:48px 24px 32px;border-top:1px solid rgba(0,0,0,.04);max-width:var
       <div class="hero-stars">&starf;&starf;&starf;&starf;&starf;</div>
       <span>&bull; EU-Cloud, DSGVO-konform &bull; Native Mobilfunkintegration &bull; Shomi KI-Assistent inklusive</span>
     </div>
-    <a href="tel:+492451660660" class="hero-phone rv d5" onclick="dataLayer.push({'event':'phone_click','cta_location':'hero'})">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
-      Lieber kurz telefonieren? 02451 &ndash; 66066
-    </a>
   </div>
   <div class="hero-r rv d3">
     <div class="voice-sim">
@@ -871,28 +988,12 @@ footer{padding:48px 24px 32px;border-top:1px solid rgba(0,0,0,.04);max-width:var
 </section>
 
 <!-- ═══ HOW IT WORKS ═══ -->
-
-<!-- ═══ MID-CTA: Fängt überzeugte Besucher früh ab ═══ -->
-<div class="mid-cta rv">
-  <div class="mid-cta-text">
-    <h3>Erkennen Sie sich wieder?</h3>
-    <p>Dann lassen Sie uns in 30 Minuten klären, ob HEKO Voice Ihr Problem löst. Kostenlos, ehrlich, ohne Verpflichtung.</p>
-  </div>
-  <div class="mid-cta-actions">
-    <a href="#cta" class="btn btn-blue btn-m" onclick="dataLayer.push({'event':'cta_click','cta_location':'mid-page','cta_type':'system-check'})">System-Check starten &rarr;</a>
-    <a href="tel:+492451660660" class="mid-cta-phone" onclick="dataLayer.push({'event':'phone_click','cta_location':'mid-page'})">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
-      02451 &ndash; 66066
-    </a>
-  </div>
-</div>
-
 <section id="so-funktionierts">
   <div style="max-width:var(--max);margin:0 auto">
-    <div class="rv"><div class="el">So funktioniert's</div><h2 class="sh">Sie müssen nichts tun. <em>Wir machen alles.</em></h2><p class="sd">Kein Installieren, kein Konfigurieren, kein Handbuch lesen. Wir kommen, richten ein, fertig.</p></div>
+    <div class="rv"><div class="el">So funktioniert's</div><h2 class="sh">Wir führen. Sie entscheiden. <em>Gemeinsam live.</em></h2><p class="sd">Sie nennen uns Ihre Anforderungen &mdash; wir kümmern uns um Technik, Konfiguration und Einrichtung. In drei Schritten zum neuen Standard.</p></div>
     <div class="steps">
       <div class="step rv d1"><div class="step-num">01</div><div class="step-title">System-Check & Analyse</div><div class="step-text">Wir prüfen Ihre aktuelle Infrastruktur, Rufnummern und Anforderungen. Kostenlos, in 30 Minuten, ohne Verpflichtung.</div></div>
-      <div class="step rv d2"><div class="step-num">02</div><div class="step-title">Konfiguration & Setup</div><div class="step-text">Wir richten alles ein: Rufverteilung, Warteschleifen, Shomi KI-Assistent, CRM-Anbindung, Teams-Integration, Mobilfunk. Sie müssen nichts tun.</div></div>
+      <div class="step rv d2"><div class="step-num">02</div><div class="step-title">Konfiguration & Setup</div><div class="step-text">Wir richten alles ein: Rufverteilung, Warteschleifen, Shomi KI-Assistent, CRM-Anbindung, Teams-Integration, Mobilfunk &mdash; alles nach Ihren Vorgaben, von uns umgesetzt.</div></div>
       <div class="step rv d3"><div class="step-num">03</div><div class="step-title">Go-Live & Betreuung</div><div class="step-text">Ihr Team telefoniert sofort &mdash; am Desktop, Handy oder in Teams. Kurze Einweisung, dann laufender Support. Wir bleiben Ihr Partner.</div></div>
     </div>
   </div>
@@ -992,7 +1093,7 @@ footer{padding:48px 24px 32px;border-top:1px solid rgba(0,0,0,.04);max-width:var
         <div class="roi-m"><div class="roi-n" style="color:var(--green)">Überall</div><div class="roi-l">erreichbar &mdash; Büro, Handy, Teams, per GSM oder App</div></div>
         <div class="roi-m"><div class="roi-n" style="color:var(--blue)">Shomi</div><div class="roi-l">Ihr KI-Assistent &mdash; filtert, protokolliert, leitet weiter</div></div>
         <div class="roi-m"><div class="roi-n" style="color:var(--navy)">Sofort</div><div class="roi-l">eingerichtet &mdash; sicher aus der EU-Cloud</div></div>
-        <div class="roi-m"><div class="roi-n" style="color:var(--amber)">Null</div><div class="roi-l">Aufwand für Sie &mdash; wir machen alles</div></div>
+        <div class="roi-m"><div class="roi-n" style="color:var(--amber)">Minimal</div><div class="roi-l">Ihr Aufwand &mdash; 30 Min. Briefing, wir erledigen den Rest</div></div>
       </div>
     </div>
   </div>
@@ -1156,8 +1257,8 @@ footer{padding:48px 24px 32px;border-top:1px solid rgba(0,0,0,.04);max-width:var
 <!-- ═══ IMAGE BREAK: Partnerschaft ═══ -->
 <div class="img-break rv" style="background-image:url('https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&w=1200&q=80');margin-left:24px;margin-right:24px;height:240px">
   <div class="img-break-content">
-    <h3>Wir machen alles. Sie telefonieren einfach.</h3>
-    <p>Persönliche Einrichtung. Rufnummern-Portierung. KI-Konfiguration. Team-Schulung. Laufende Betreuung.</p>
+    <h3>Sie sagen, was Sie brauchen. Wir liefern.</h3>
+    <p>Persönliche Beratung. Einrichtung nach Ihren Vorgaben. Rufnummern-Portierung. Team-Schulung. Laufende Betreuung.</p>
   </div>
 </div>
 
@@ -1168,13 +1269,8 @@ footer{padding:48px 24px 32px;border-top:1px solid rgba(0,0,0,.04);max-width:var
   <div class="cta-row">
     <a href="https://calendly.com/DEIN-LINK" target="_blank" rel="noopener" class="btn btn-white btn-l" onclick="dataLayer.push({'event':'cta_click','cta_location':'bottom','cta_type':'system-check'})">System-Check starten &rarr;</a>
     <a href="https://calendly.com/DEIN-DEMO-LINK" target="_blank" rel="noopener" class="btn btn-outline-w btn-l" onclick="dataLayer.push({'event':'cta_click','cta_location':'bottom','cta_type':'demo'})">Demo vereinbaren</a>
-    <a href="tel:+492451660660" class="btn btn-outline-w btn-l" onclick="dataLayer.push({'event':'phone_click','cta_location':'bottom'})" style="gap:8px">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
-      02451 &ndash; 66066
-    </a>
   </div>
   <div class="cta-trust">&check; Nummern behalten &middot; &check; EU-Cloud &middot; &check; DSGVO-konform &middot; &check; Ab 2 Nebenstellen skalierbar &middot; &check; Keine Microsoft Teams Phone-Lizenz nötig</div>
-  <div class="urgency"><span class="urgency-dot"></span>Aktuell freie Kapazitäten für Einrichtung &mdash; Termine sind begrenzt</div>
 </div>
 
 <!-- ═══ STICKY CTA BAR ═══ -->
