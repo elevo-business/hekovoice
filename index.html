@@ -198,6 +198,16 @@ section{position:relative;padding:0 24px;margin-bottom:var(--gap)}
 /* ═══ HERO ═══ */
 .hero{max-width:var(--max);margin:0 auto;padding:140px 24px 80px;display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:56px;position:relative}
 .hero::before{content:'';position:absolute;top:-100px;right:-200px;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(0,159,227,.06),transparent 70%);pointer-events:none}
+.hero::after{content:'';position:absolute;inset:0;background-image:radial-gradient(circle,rgba(0,159,227,.035) 1px,transparent 1px);background-size:32px 32px;pointer-events:none;animation:gridDrift 20s linear infinite}
+@keyframes gridDrift{0%{background-position:0 0}100%{background-position:32px 32px}}
+.hero .orb{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none;opacity:.5;animation:orbFloat 25s ease-in-out infinite alternate;z-index:0}
+.hero .orb-1{width:400px;height:400px;background:rgba(0,159,227,.06);top:-10%;right:-5%;animation-delay:-5s}
+.hero .orb-2{width:300px;height:300px;background:rgba(139,92,246,.04);bottom:5%;left:-8%;animation-delay:-12s}
+@keyframes orbFloat{0%{transform:translate(0,0) scale(1)}50%{transform:translate(30px,-20px) scale(1.1)}100%{transform:translate(-20px,15px) scale(.95)}}
+.stats-strip::after,.cta::after{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px);background-size:60px 60px;pointer-events:none;animation:techGrid 30s linear infinite}
+@keyframes techGrid{0%{background-position:0 0}100%{background-position:60px 60px}}
+#techCanvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:.4}
+section,nav,.footer{position:relative;z-index:1}
 .hero h1{font-family:var(--serif);font-size:clamp(34px,4.5vw,52px);font-weight:800;line-height:1.06;color:var(--navy)}
 .hero h1 em{color:var(--blue);font-style:italic}
 .hero-p{font-size:17px;color:var(--text2);line-height:1.7;margin:16px 0 28px;max-width:480px}
@@ -741,6 +751,7 @@ body::before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
 </style>
 </head>
 <body>
+<canvas id="techCanvas"></canvas>
 
 <!-- GTM noscript (nutzt HEKO_CONFIG.gtmId) -->
 <noscript><iframe id="gtm-ns" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -853,6 +864,8 @@ body::before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
 
 <!-- ═══ HERO ═══ -->
 <section class="hero">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
   <div class="hero-l">
     <div class="el rv">Cloud-Telefonie mit KI</div>
     <h1 class="rv d1">Nie wieder ein Kunden&shy;gespräch <em>verpassen.</em></h1>
@@ -942,7 +955,7 @@ body::before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
       <!-- CRM Badge -->
       <div class="vs-crm" id="vsCrm">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-        <span>Lead in Pipedrive erstellt &middot; Follow-up in 2h geplant</span>
+        <span>Kundenanfrage erkannt &middot; Zust&auml;ndiger Berater informiert</span>
       </div>
     </div>
   </div>
@@ -1825,6 +1838,42 @@ function closeLegal(){
 <button class="btt" id="btt" onclick="window.scrollTo({top:0})" aria-label="Nach oben scrollen">
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
 </button>
+
+<!-- ═══ TECH PARTICLES ═══ -->
+<script>
+(function(){
+  var c=document.getElementById('techCanvas');
+  if(!c)return;
+  var ctx=c.getContext('2d');
+  var pts=[];var max=35;
+  function resize(){c.width=window.innerWidth;c.height=window.innerHeight}
+  window.addEventListener('resize',resize);resize();
+  for(var i=0;i<max;i++) pts.push({
+    x:Math.random()*c.width, y:Math.random()*c.height,
+    vx:(Math.random()-.5)*.3, vy:(Math.random()-.5)*.3,
+    r:Math.random()*1.5+.5
+  });
+  function draw(){
+    ctx.clearRect(0,0,c.width,c.height);
+    for(var i=0;i<pts.length;i++){
+      var p=pts[i];
+      p.x+=p.vx;p.y+=p.vy;
+      if(p.x<0)p.x=c.width;if(p.x>c.width)p.x=0;
+      if(p.y<0)p.y=c.height;if(p.y>c.height)p.y=0;
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle='rgba(0,159,227,.12)';ctx.fill();
+      for(var j=i+1;j<pts.length;j++){
+        var q=pts[j];var dx=p.x-q.x;var dy=p.y-q.y;
+        var d=Math.sqrt(dx*dx+dy*dy);
+        if(d<150){ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);
+          ctx.strokeStyle='rgba(0,159,227,'+(0.03*(1-d/150))+')';ctx.stroke()}
+      }
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+</script>
 
 </body>
 </html>
