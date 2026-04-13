@@ -115,6 +115,10 @@ a{color:var(--blue);text-decoration:none}
 .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .form-note{font-size:11px;color:var(--text3);line-height:1.5;margin-top:4px}
 .form-note svg{vertical-align:-2px;margin-right:3px}
+.pd-hint{font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.5}
+.pd-form-wrap{border-radius:10px;overflow:hidden;min-height:320px;position:relative}
+.pd-form-wrap iframe{border:none!important;width:100%!important;min-height:420px}
+.pd-loader{text-align:center;padding:40px 20px;color:var(--text3);font-size:13px}
 /* ═══ BUTTONS ═══ */
 .bc-footer{padding:16px 32px 24px;display:flex;gap:10px;align-items:center}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:12px 24px;border-radius:10px;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer;transition:all .25s;border:none}
@@ -262,54 +266,20 @@ a{color:var(--blue);text-decoration:none}
         </div>
       </div>
 
-      <!-- STEP 2: Form -->
+      <!-- STEP 2: Pipedrive Form -->
       <div class="bc-body form-section" id="step2">
         <div class="selected-summary" id="selectedSummary">
           <div class="ss-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
           <div class="ss-text"><strong id="summaryDate"></strong><span id="summaryTime"></span></div>
         </div>
-        <div class="form-grid">
-          <div class="field-row">
-            <div class="field">
-              <label>Vorname <span class="req">*</span></label>
-              <input type="text" id="fFirstName" placeholder="Max" required>
-            </div>
-            <div class="field">
-              <label>Nachname <span class="req">*</span></label>
-              <input type="text" id="fLastName" placeholder="Mustermann" required>
-            </div>
-          </div>
-          <div class="field">
-            <label>E-Mail <span class="req">*</span></label>
-            <input type="email" id="fEmail" placeholder="max@firma.de" required>
-          </div>
-          <div class="field">
-            <label>Telefon <span class="req">*</span></label>
-            <input type="tel" id="fPhone" placeholder="+49 123 456789" required>
-          </div>
-          <div class="field">
-            <label>Firma</label>
-            <input type="text" id="fCompany" placeholder="Firma GmbH">
-          </div>
-          <div class="field">
-            <label>Anzahl Mitarbeiter</label>
-            <select id="fSize">
-              <option value="">Bitte wählen</option>
-              <option>1–5</option>
-              <option>6–15</option>
-              <option>16–50</option>
-              <option>51–100</option>
-              <option>100+</option>
-            </select>
-          </div>
-          <div class="field">
-            <label>Anmerkungen</label>
-            <textarea id="fNotes" placeholder="z.B. aktuelle Anlage, besondere Anforderungen…"></textarea>
-          </div>
-          <div class="form-note">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-            Ihre Daten werden vertraulich behandelt und ausschließlich für die Terminvereinbarung verwendet.
-          </div>
+        <p class="pd-hint">Bitte füllen Sie das Formular aus — Ihr Termin wird automatisch reserviert.</p>
+        <div class="pd-form-wrap" id="pdFormWrap">
+          <div class="pd-loader" id="pdLoader">Formular wird geladen…</div>
+          <!-- Iframe wird dynamisch geladen wenn Step 2 sichtbar wird -->
+        </div>
+        <div class="form-note" style="margin-top:12px">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Ihre Daten werden vertraulich behandelt. Nach dem Absenden erhalten Sie eine Bestätigung per E-Mail.
         </div>
       </div>
 
@@ -569,14 +539,19 @@ function selectTime(t) {
 function updateBtn() {
   const btn = document.getElementById('btnNext');
   const back = document.getElementById('btnBack');
+  const footer = document.getElementById('bcFooter');
   if (state.step === 1) {
+    footer.style.display = '';
     btn.disabled = !state.selectedDate || !state.selectedTime;
     btn.textContent = 'Weiter →';
     back.style.display = 'none';
   } else if (state.step === 2) {
-    btn.disabled = false;
-    btn.textContent = 'Termin verbindlich buchen';
+    // Pipedrive-Form hat eigenen Submit-Button → Footer nur mit Zurück
+    footer.style.display = '';
+    btn.style.display = 'none';
     back.style.display = '';
+  } else if (state.step === 3) {
+    footer.style.display = 'none';
   }
 }
 function goNext() {
@@ -593,8 +568,6 @@ function goNext() {
     }
     state.step = 2;
     showStep(2);
-  } else if (state.step === 2) {
-    submitBooking();
   }
 }
 function goBack() {
@@ -624,6 +597,8 @@ function showStep(n) {
       DAY_NAMES[d.getDay()] + ', ' + d.getDate() + '. ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear();
     document.getElementById('summaryTime').textContent =
       state.selectedTime + ' Uhr · 30 Minuten · Kostenloser System-Check';
+    // Pipedrive-Formular dynamisch laden (erst wenn Step 2 sichtbar ist)
+    loadPipedriveForm();
   }
   const hdr = document.querySelector('.bc-title');
   const sub = document.querySelector('.bc-sub');
@@ -632,95 +607,106 @@ function showStep(n) {
   if (n===3) { hdr.textContent='Geschafft!'; sub.textContent=''; }
   updateBtn();
 }
+// ═══ PIPEDRIVE FORM LADEN ═══
+var pdFormLoaded = false;
+function loadPipedriveForm() {
+  if (pdFormLoaded) return;
+  pdFormLoaded = true;
+  var wrap = document.getElementById('pdFormWrap');
+  var loader = document.getElementById('pdLoader');
+  // Methode 1: Pipedrive Web Form Widget (nativ)
+  var container = document.createElement('div');
+  container.className = 'pipedriveWebForms';
+  container.setAttribute('data-pd-webforms',
+    'https://webforms.pipedrive.com/f/63tNEpJ3ONLHbsJGN7qUiPS5JurmHTfBOkeYjiH8ym4BGkgziEaPlNcHynX5g4C9XR');
+  wrap.appendChild(container);
+  // Loader-Script laden (initialisiert das Widget)
+  var script = document.createElement('script');
+  script.src = 'https://webforms.pipedrive.com/f/loader';
+  script.onload = function() {
+    if (loader) loader.style.display = 'none';
+    // Iframe-Watcher starten nach kurzer Verzögerung
+    setTimeout(watchPipedriveIframe, 1500);
+  };
+  script.onerror = function() {
+    // Fallback: Direkter Iframe
+    if (loader) loader.textContent = 'Formular wird direkt geladen…';
+    var iframe = document.createElement('iframe');
+    iframe.src = 'https://webforms.pipedrive.com/f/63tNEpJ3ONLHbsJGN7qUiPS5JurmHTfBOkeYjiH8ym4BGkgziEaPlNcHynX5g4C9XR';
+    iframe.style.cssText = 'width:100%;min-height:450px;border:none;border-radius:8px';
+    iframe.setAttribute('loading', 'lazy');
+    wrap.innerHTML = '';
+    wrap.appendChild(iframe);
+    setTimeout(watchPipedriveIframe, 2000);
+  };
+  document.body.appendChild(script);
+}
 
-// ═══ SUBMIT → PIPEDRIVE ═══
-function submitBooking() {
-  const firstName = document.getElementById('fFirstName').value.trim();
-  const lastName = document.getElementById('fLastName').value.trim();
-  const email = document.getElementById('fEmail').value.trim();
-  const phone = document.getElementById('fPhone').value.trim();
-  if (!firstName || !lastName || !email || !phone) {
-    alert('Bitte füllen Sie alle Pflichtfelder aus.');
-    return;
+// ═══ PIPEDRIVE FORM SUBMISSION LISTENER ═══
+// Pipedrive sendet ein postMessage-Event wenn das Formular abgeschickt wird
+window.addEventListener('message', function(event) {
+  // Pipedrive Web Forms senden Events bei Submission
+  if (event.origin && event.origin.indexOf('pipedrive') !== -1) {
+    try {
+      const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+      if (data && (data.event === 'formSubmitted' || data.type === 'formSubmitted' || 
+          (data.action && data.action === 'submitted') || data.success)) {
+        onPipedriveSubmit();
+      }
+    } catch(e) {
+      // Einige Pipedrive-Events sind keine JSON-Strings
+      if (typeof event.data === 'string' && event.data.indexOf('submitted') !== -1) {
+        onPipedriveSubmit();
+      }
+    }
   }
-  // E-Mail Validierung
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    alert('Bitte geben Sie eine gültige E-Mail-Adresse ein.');
-    return;
-  }
-  const company = document.getElementById('fCompany').value.trim();
-  const size = document.getElementById('fSize').value;
-  const notes = document.getElementById('fNotes').value.trim();
+});
+// Fallback: Beobachte iframe-Änderungen (wenn postMessage nicht zuverlässig feuert)
+function watchPipedriveIframe() {
+  const wrap = document.getElementById('pdFormWrap');
+  if (!wrap) return;
+  const observer = new MutationObserver(function(mutations) {
+    mutations.forEach(function(m) {
+      // Pipedrive zeigt nach Submit eine Danke-Seite im iframe
+      const iframes = wrap.querySelectorAll('iframe');
+      iframes.forEach(function(iframe) {
+        try {
+          // Check ob iframe-Höhe sich drastisch ändert (Danke-Seite ist kleiner)
+          if (iframe.style.height && parseInt(iframe.style.height) < 150 && state.step === 2 && !state.submitted) {
+            onPipedriveSubmit();
+          }
+        } catch(e) {}
+      });
+    });
+  });
+  observer.observe(wrap, { childList: true, subtree: true, attributes: true, attributeFilter: ['style'] });
+}
+function onPipedriveSubmit() {
+  if (state.submitted) return; // Nur einmal
+  state.submitted = true;
   const d = state.selectedDate;
   const dateStr = DAY_NAMES[d.getDay()] + ', ' + d.getDate() + '. ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear();
   const timeStr = state.selectedTime + ' Uhr';
   // Slot als gebucht speichern
   saveBooking(d, state.selectedTime);
-  // Pipedrive Lead Note
-  const gclid = sessionStorage.getItem('gclid') || '';
-  const utmSource = sessionStorage.getItem('utm_source') || '';
-  const utmMedium = sessionStorage.getItem('utm_medium') || '';
-  const utmCampaign = sessionStorage.getItem('utm_campaign') || '';
-  const leadNote = [
-    'TERMIN-BUCHUNG via Website',
-    '────────────────────────',
-    'Datum: ' + dateStr,
-    'Uhrzeit: ' + timeStr,
-    'Typ: Kostenloser System-Check (30 Min.)',
-    '',
-    company ? 'Firma: ' + company : '',
-    size ? 'Mitarbeiter: ' + size : '',
-    notes ? 'Anmerkungen: ' + notes : '',
-    '',
-    gclid ? 'gclid: ' + gclid : '',
-    utmSource ? 'Quelle: ' + utmSource + ' / ' + utmMedium + ' / ' + utmCampaign : '',
-  ].filter(Boolean).join('\n');
-  // Pipedrive Web Form Submit
-  const PIPEDRIVE_FORM_URL = 'https://webforms.pipedrive.com/f/63tNEpJ3ONLHbsJGN7qUiPS5JurmHTfBOkeYjiH8ym4BGkgziEaPlNcHynX5g4C9XR';
-  const iframe = document.createElement('iframe');
-  iframe.name = 'pd_booking_frame';
-  iframe.style.display = 'none';
-  document.body.appendChild(iframe);
-  const form = document.createElement('form');
-  form.method = 'POST';
-  form.action = PIPEDRIVE_FORM_URL;
-  form.target = 'pd_booking_frame';
-  const fields = {
-    'first_name': firstName,
-    'last_name': lastName,
-    'email': email,
-    'phone': phone,
-    'company_name': company || (firstName + ' ' + lastName),
-    'note': leadNote
-  };
-  Object.entries(fields).forEach(([k,v]) => {
-    const input = document.createElement('input');
-    input.type = 'hidden'; input.name = k; input.value = v;
-    form.appendChild(input);
-  });
-  document.body.appendChild(form);
-  form.submit();
-  setTimeout(() => { form.remove(); iframe.remove(); }, 5000);
-  // Success
+  // Success anzeigen
   state.step = 3;
   document.getElementById('successDetail').innerHTML = `
     <div class="success-detail-row"><span class="success-detail-label">Datum</span><span class="success-detail-value">${dateStr}</span></div>
     <div class="success-detail-row"><span class="success-detail-label">Uhrzeit</span><span class="success-detail-value">${timeStr}</span></div>
     <div class="success-detail-row"><span class="success-detail-label">Dauer</span><span class="success-detail-value">30 Minuten</span></div>
-    <div class="success-detail-row"><span class="success-detail-label">Name</span><span class="success-detail-value">${firstName} ${lastName}</span></div>
-    ${company ? `<div class="success-detail-row"><span class="success-detail-label">Firma</span><span class="success-detail-value">${company}</span></div>` : ''}
-    <div class="success-detail-row"><span class="success-detail-label">E-Mail</span><span class="success-detail-value">${email}</span></div>
+    <div class="success-detail-row"><span class="success-detail-label">Typ</span><span class="success-detail-value">Kostenloser System-Check</span></div>
   `;
   showStep(3);
-  // Google Ads Conversion + Enhanced Conversions
+  // Google Ads Conversion
   if (typeof gtag === 'function') {
-    gtag('set','user_data',{email:email,phone_number:phone});
     gtag('event','conversion',{send_to:'AW-364517411/booking',value:1.0,currency:'EUR'});
     gtag('event','booking_complete',{event_category:'lead',event_label:'system-check',value:1});
   }
 }
 
 // ═══ INIT ═══
+state.submitted = false;
 renderCalendar();
 updateBtn();
 </script>
