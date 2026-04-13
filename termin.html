@@ -72,7 +72,8 @@ a{color:var(--blue);text-decoration:none}
 .cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
 .cal-month{font-size:15px;font-weight:600;color:var(--navy)}
 .cal-btn{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);transition:all .2s}
-.cal-btn:hover{border-color:var(--blue);color:var(--blue)}
+.cal-btn:hover:not(:disabled){border-color:var(--blue);color:var(--blue)}
+.cal-btn:disabled{opacity:.3;cursor:default}
 .cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:8px}
 .cal-wd{font-size:10px;font-weight:600;color:var(--text3);text-align:center;padding:4px 0;text-transform:uppercase;letter-spacing:.5px}
 .cal-days{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
@@ -86,9 +87,21 @@ a{color:var(--blue);text-decoration:none}
 .time-section{margin-top:20px;padding-top:20px;border-top:1px solid var(--border)}
 .time-label{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:10px}
 .time-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.time-slot{padding:10px 8px;border-radius:8px;border:1.5px solid var(--border);text-align:center;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;color:var(--text2)}
-.time-slot:hover{border-color:var(--blue);color:var(--blue);background:rgba(0,159,227,.04)}
+.time-slot{padding:10px 8px;border-radius:8px;border:1.5px solid var(--border);text-align:center;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;color:var(--text2);display:flex;align-items:center;justify-content:space-between;gap:6px}
+.time-slot:hover:not(.booked){border-color:var(--blue);color:var(--blue);background:rgba(0,159,227,.04)}
 .time-slot.selected{background:var(--blue);color:#fff;border-color:var(--blue);font-weight:700}
+.time-slot.selected .slot-badge{color:rgba(255,255,255,.7)}
+.time-slot.booked{background:var(--bg2);border-color:transparent;color:var(--text3);cursor:not-allowed;opacity:.6}
+.time-slot.booked .slot-time{text-decoration:line-through}
+.slot-badge{font-size:10px;font-weight:600;letter-spacing:.3px;text-transform:uppercase}
+.slot-badge.free{color:var(--green)}
+.time-group-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin:14px 0 8px;padding-left:2px}
+.time-group-label:first-child{margin-top:0}
+.time-label{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+.slot-count{font-size:11px;font-weight:500;color:var(--text3);background:var(--bg2);padding:3px 10px;border-radius:20px}
+.no-slots{text-align:center;padding:24px 16px;color:var(--text3);font-size:13px;line-height:1.6;background:var(--bg2);border-radius:10px}
+.cal-day.few-left{color:var(--amber);font-weight:600}
+.cal-dot{display:block;width:4px;height:4px;border-radius:50%;background:var(--amber);margin:1px auto 0}
 /* ═══ FORM ═══ */
 .form-section{display:none}
 .form-section.active{display:block}
@@ -159,6 +172,8 @@ a{color:var(--blue);text-decoration:none}
   .time-grid{grid-template-columns:repeat(2,1fr)}
   .success-view{padding:32px 20px}
   .steps-indicator{padding:16px 20px 0}
+  .time-slot{font-size:12px;padding:9px 8px}
+  .slot-count{font-size:10px;padding:2px 8px}
 }
 </style>
 </head>
@@ -231,9 +246,9 @@ a{color:var(--blue);text-decoration:none}
       <!-- STEP 1: Calendar + Time -->
       <div class="bc-body" id="step1">
         <div class="cal-nav">
-          <button class="cal-btn" onclick="changeMonth(-1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
+          <button class="cal-btn" id="btnPrevMonth" onclick="changeMonth(-1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
           <div class="cal-month" id="calMonth"></div>
-          <button class="cal-btn" onclick="changeMonth(1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>
+          <button class="cal-btn" id="btnNextMonth" onclick="changeMonth(1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>
         </div>
         <div class="cal-weekdays">
           <div class="cal-wd">Mo</div><div class="cal-wd">Di</div><div class="cal-wd">Mi</div>
@@ -243,7 +258,7 @@ a{color:var(--blue);text-decoration:none}
 
         <div class="time-section" id="timeSection" style="display:none">
           <div class="time-label" id="timeLabel">Verfügbare Zeiten</div>
-          <div class="time-grid" id="timeGrid"></div>
+          <div id="timeGrid"></div>
         </div>
       </div>
 
@@ -315,162 +330,333 @@ a{color:var(--blue);text-decoration:none}
       <!-- Footer Buttons -->
       <div class="bc-footer" id="bcFooter">
         <button class="btn btn-back" id="btnBack" style="display:none" onclick="goBack()">← Zurück</button>
-        <button class="btn btn-primary btn-full" id="btnNext" disabled onclick="goNext()">Uhrzeit wählen</button>
+        <button class="btn btn-primary btn-full" id="btnNext" disabled onclick="goNext()">Weiter →</button>
       </div>
     </div>
   </div>
 </div>
 
 <script>
-// ═══ STATE ═══
+// ═══════════════════════════════════════
+//  HEKO Voice Terminbuchung — Logik
+// ═══════════════════════════════════════
+
+// ── Config ──
+const CONFIG = {
+  leadTimeMinutes: 60,        // Mindestens 1h Vorlauf
+  maxWeeksAhead: 4,           // Max 4 Wochen im Voraus
+  slotDuration: 30,           // 30 Min pro Termin
+  lunchStart: '12:00',        // Mittagspause von
+  lunchEnd: '13:00',          // Mittagspause bis
+  dayStart: '09:00',          // Erster Slot
+  dayEnd: '17:00',            // Nach 17:00 keine Slots
+  lastBookableSlot: '16:30',  // Letzter buchbarer Slot
+  sameDayCutoff: 15,          // Nach 15 Uhr keine Same-Day-Buchung
+};
+const MONTHS = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+const DAY_NAMES = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+
+// ── State ──
 const state = {
   step: 1,
   currentMonth: new Date().getMonth(),
   currentYear: new Date().getFullYear(),
   selectedDate: null,
-  selectedTime: null
+  selectedTime: null,
 };
-const MONTHS = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
-const DAYS_SHORT = ['Mo','Di','Mi','Do','Fr','Sa','So'];
-const TIMES_MORNING = ['09:00','09:30','10:00','10:30','11:00','11:30'];
-const TIMES_AFTERNOON = ['13:00','13:30','14:00','14:30','15:00','15:30','16:00','16:30'];
 
-// ═══ CALENDAR ═══
-function renderCalendar(){
+// ── Booked Slots Storage ──
+// Simuliert gebuchte Termine (deterministisch per Datum + eigene Buchungen)
+function getBookedSlots(dateObj) {
+  const key = dateKey(dateObj);
+  const own = JSON.parse(sessionStorage.getItem('heko_bookings') || '{}');
+  const ownSlots = own[key] || [];
+  // Simuliere 2-4 "fremde" Buchungen pro Tag (deterministisch)
+  const seed = dateObj.getDate() * 31 + dateObj.getMonth() * 7 + dateObj.getFullYear();
+  const allSlots = generateAllSlots();
+  const simulated = [];
+  const count = 2 + (seed % 3); // 2-4 belegte Slots
+  for (let i = 0; i < count; i++) {
+    const idx = (seed * (i + 3) + i * 17) % allSlots.length;
+    if (!simulated.includes(allSlots[idx])) simulated.push(allSlots[idx]);
+  }
+  return [...new Set([...simulated, ...ownSlots])];
+}
+function saveBooking(dateObj, time) {
+  const key = dateKey(dateObj);
+  const own = JSON.parse(sessionStorage.getItem('heko_bookings') || '{}');
+  if (!own[key]) own[key] = [];
+  own[key].push(time);
+  sessionStorage.setItem('heko_bookings', JSON.stringify(own));
+}
+function dateKey(d) {
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+// ── Slot-Generierung ──
+function generateAllSlots() {
+  const slots = [];
+  let h = 9, m = 0;
+  while (h < 17) {
+    const t = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0');
+    // Mittagspause überspringen
+    if (!(h === 12 && m >= 0) || h >= 13) {
+      if (t <= CONFIG.lastBookableSlot) slots.push(t);
+    }
+    m += CONFIG.slotDuration;
+    if (m >= 60) { h++; m = 0; }
+  }
+  return slots;
+}
+function getAvailableSlots(dateObj) {
+  const all = generateAllSlots();
+  const booked = getBookedSlots(dateObj);
+  const now = new Date();
+  const isToday = dateObj.toDateString() === now.toDateString();
+  return all.map(slot => {
+    const [sh, sm] = slot.split(':').map(Number);
+    let status = 'available';
+    // Vergangene Slots (heute)
+    if (isToday) {
+      const slotTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), sh, sm);
+      const minTime = new Date(now.getTime() + CONFIG.leadTimeMinutes * 60000);
+      if (slotTime <= minTime) status = 'past';
+    }
+    // Gebuchte Slots
+    if (status === 'available' && booked.includes(slot)) status = 'booked';
+    return { time: slot, status };
+  });
+}
+
+// ── Datum-Validierung ──
+function isDateBookable(dateObj) {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const maxDate = new Date(today.getTime() + CONFIG.maxWeeksAhead * 7 * 86400000);
+  // Vergangenheit
+  if (dateObj < today) return false;
+  // Wochenende
+  const dow = dateObj.getDay();
+  if (dow === 0 || dow === 6) return false;
+  // Zu weit in der Zukunft
+  if (dateObj > maxDate) return false;
+  // Heute nach Cutoff
+  if (dateObj.getTime() === today.getTime() && now.getHours() >= CONFIG.sameDayCutoff) return false;
+  // Prüfe ob mindestens 1 Slot verfügbar
+  const slots = getAvailableSlots(dateObj);
+  const freeSlots = slots.filter(s => s.status === 'available');
+  if (freeSlots.length === 0) return false;
+  return true;
+}
+function countFreeSlots(dateObj) {
+  return getAvailableSlots(dateObj).filter(s => s.status === 'available').length;
+}
+
+// ═══ KALENDER RENDERING ═══
+function renderCalendar() {
   const m = state.currentMonth, y = state.currentYear;
   document.getElementById('calMonth').textContent = MONTHS[m] + ' ' + y;
-  const firstDay = new Date(y,m,1).getDay();
-  const startDay = firstDay === 0 ? 6 : firstDay - 1;
-  const daysInMonth = new Date(y,m+1,0).getDate();
-  const today = new Date(); today.setHours(0,0,0,0);
+  // Monatswechsel-Buttons
+  const now = new Date();
+  const maxDate = new Date(now.getTime() + CONFIG.maxWeeksAhead * 7 * 86400000);
+  document.getElementById('btnPrevMonth').disabled = (y === now.getFullYear() && m <= now.getMonth());
+  document.getElementById('btnNextMonth').disabled = (y > maxDate.getFullYear() || (y === maxDate.getFullYear() && m >= maxDate.getMonth()));
+  const firstDay = new Date(y, m, 1).getDay();
+  const startDay = firstDay === 0 ? 6 : firstDay - 1; // Mo=0
+  const daysInMonth = new Date(y, m+1, 0).getDate();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   let html = '';
-  for(let i=0;i<startDay;i++) html += '<div class="cal-day other-month"></div>';
-  for(let d=1;d<=daysInMonth;d++){
-    const date = new Date(y,m,d);
-    const dayOfWeek = date.getDay();
-    const isPast = date < today;
-    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+  // Leere Zellen vor dem 1.
+  for (let i = 0; i < startDay; i++) html += '<div class="cal-day other-month"></div>';
+  for (let d = 1; d <= daysInMonth; d++) {
+    const date = new Date(y, m, d);
+    const bookable = isDateBookable(date);
     const isToday = date.getTime() === today.getTime();
     const isSelected = state.selectedDate && date.getTime() === state.selectedDate.getTime();
+    const freeCount = bookable ? countFreeSlots(date) : 0;
     let cls = 'cal-day';
-    if(isPast || isWeekend) cls += ' disabled';
-    else if(isSelected) cls += ' selected';
-    else if(isToday) cls += ' today';
-    html += `<div class="${cls}" ${!isPast && !isWeekend ? `onclick="selectDate(${y},${m},${d})"` : ''}>${d}</div>`;
+    let tooltip = '';
+    if (!bookable) {
+      cls += ' disabled';
+      if (date.getDay() === 0 || date.getDay() === 6) tooltip = 'Wochenende';
+      else if (date < today) tooltip = 'Vergangen';
+      else if (date > maxDate) tooltip = 'Zu weit voraus';
+      else tooltip = 'Keine Termine frei';
+    } else if (isSelected) {
+      cls += ' selected';
+    } else if (isToday) {
+      cls += ' today';
+    }
+    // Wenige Slots → Highlight
+    if (bookable && !isSelected && freeCount <= 3 && freeCount > 0) cls += ' few-left';
+    const onclick = bookable ? `onclick="selectDate(${y},${m},${d})"` : '';
+    const titleAttr = tooltip ? `title="${tooltip}"` : (bookable ? `title="${freeCount} Termine frei"` : '');
+    html += `<div class="${cls}" ${onclick} ${titleAttr}>${d}${bookable && freeCount <= 3 ? '<span class="cal-dot"></span>' : ''}</div>`;
   }
   document.getElementById('calDays').innerHTML = html;
 }
-function changeMonth(dir){
-  state.currentMonth += dir;
-  if(state.currentMonth > 11){state.currentMonth = 0;state.currentYear++}
-  if(state.currentMonth < 0){state.currentMonth = 11;state.currentYear--}
+function changeMonth(dir) {
+  const now = new Date();
+  const maxDate = new Date(now.getTime() + CONFIG.maxWeeksAhead * 7 * 86400000);
+  const newMonth = state.currentMonth + dir;
+  let newYear = state.currentYear;
+  let nm = newMonth;
+  if (nm > 11) { nm = 0; newYear++; }
+  if (nm < 0) { nm = 11; newYear--; }
+  // Nicht vor aktuellem Monat
+  if (newYear < now.getFullYear() || (newYear === now.getFullYear() && nm < now.getMonth())) return;
+  // Nicht über Max
+  if (newYear > maxDate.getFullYear() || (newYear === maxDate.getFullYear() && nm > maxDate.getMonth())) return;
+  state.currentMonth = nm;
+  state.currentYear = newYear;
   renderCalendar();
 }
-function selectDate(y,m,d){
-  state.selectedDate = new Date(y,m,d);
+function selectDate(y, m, d) {
+  state.selectedDate = new Date(y, m, d);
   state.selectedTime = null;
   renderCalendar();
   showTimeSlots();
   updateBtn();
 }
-function showTimeSlots(){
+
+// ═══ ZEITSLOTS ═══
+function showTimeSlots() {
   const ts = document.getElementById('timeSection');
   const d = state.selectedDate;
+  const slots = getAvailableSlots(d);
+  const freeSlots = slots.filter(s => s.status === 'available');
+  const bookedSlots = slots.filter(s => s.status === 'booked');
+  const totalVisible = slots.filter(s => s.status !== 'past');
+  // Header
   const dayStr = d.getDate() + '. ' + MONTHS[d.getMonth()];
-  document.getElementById('timeLabel').textContent = 'Verfügbare Zeiten am ' + dayStr;
-  // Simulate some slots being taken
-  const seed = d.getDate() * 7 + d.getMonth();
-  const allTimes = [...TIMES_MORNING, ...TIMES_AFTERNOON];
-  const available = allTimes.filter((_,i) => (seed + i*3) % 5 !== 0);
+  document.getElementById('timeLabel').innerHTML =
+    '<span>Termine am ' + dayStr + '</span>' +
+    '<span class="slot-count">' + freeSlots.length + ' von ' + totalVisible.length + ' verfügbar</span>';
+  // Slots gruppiert: Vormittag / Nachmittag
+  const morning = slots.filter(s => s.status !== 'past' && parseInt(s.time) < 12);
+  const afternoon = slots.filter(s => s.status !== 'past' && parseInt(s.time) >= 13);
   let html = '';
-  available.forEach(t => {
-    const sel = state.selectedTime === t ? ' selected' : '';
-    html += `<div class="time-slot${sel}" onclick="selectTime('${t}')">${t} Uhr</div>`;
-  });
+  if (morning.length > 0) {
+    html += '<div class="time-group-label">Vormittag</div><div class="time-grid">';
+    morning.forEach(s => html += renderSlot(s));
+    html += '</div>';
+  }
+  if (afternoon.length > 0) {
+    html += '<div class="time-group-label">Nachmittag</div><div class="time-grid">';
+    afternoon.forEach(s => html += renderSlot(s));
+    html += '</div>';
+  }
+  if (freeSlots.length === 0) {
+    html = '<div class="no-slots">Keine verfügbaren Termine an diesem Tag. Bitte wählen Sie einen anderen Tag.</div>';
+  }
   document.getElementById('timeGrid').innerHTML = html;
   ts.style.display = 'block';
 }
-function selectTime(t){
+function renderSlot(s) {
+  if (s.status === 'booked') {
+    return `<div class="time-slot booked" title="Bereits vergeben"><span class="slot-time">${s.time}</span><span class="slot-badge">belegt</span></div>`;
+  }
+  const sel = state.selectedTime === s.time ? ' selected' : '';
+  return `<div class="time-slot${sel}" onclick="selectTime('${s.time}')"><span class="slot-time">${s.time}</span><span class="slot-badge free">frei</span></div>`;
+}
+function selectTime(t) {
   state.selectedTime = t;
   showTimeSlots();
   updateBtn();
 }
 
 // ═══ NAVIGATION ═══
-function updateBtn(){
+function updateBtn() {
   const btn = document.getElementById('btnNext');
   const back = document.getElementById('btnBack');
-  if(state.step === 1){
+  if (state.step === 1) {
     btn.disabled = !state.selectedDate || !state.selectedTime;
     btn.textContent = 'Weiter →';
     back.style.display = 'none';
-  } else if(state.step === 2){
+  } else if (state.step === 2) {
     btn.disabled = false;
-    btn.textContent = 'Termin buchen';
+    btn.textContent = 'Termin verbindlich buchen';
     back.style.display = '';
   }
 }
-function goNext(){
-  if(state.step === 1 && state.selectedDate && state.selectedTime){
+function goNext() {
+  if (state.step === 1 && state.selectedDate && state.selectedTime) {
+    // Nochmal prüfen ob Slot noch frei
+    const slots = getAvailableSlots(state.selectedDate);
+    const slot = slots.find(s => s.time === state.selectedTime);
+    if (!slot || slot.status !== 'available') {
+      alert('Dieser Termin ist leider nicht mehr verfügbar. Bitte wählen Sie einen anderen.');
+      state.selectedTime = null;
+      showTimeSlots();
+      updateBtn();
+      return;
+    }
     state.step = 2;
     showStep(2);
-  } else if(state.step === 2){
+  } else if (state.step === 2) {
     submitBooking();
   }
 }
-function goBack(){
-  if(state.step === 2){
+function goBack() {
+  if (state.step === 2) {
     state.step = 1;
     showStep(1);
   }
 }
-function showStep(n){
-  document.getElementById('step1').style.display = n===1?'':'none';
-  document.getElementById('step2').style.display = n===2?'':'none';
+function showStep(n) {
+  document.getElementById('step1').style.display = n===1 ? '' : 'none';
+  document.getElementById('step2').style.display = n===2 ? '' : 'none';
   document.getElementById('step2').classList.toggle('active', n===2);
-  document.getElementById('step3').style.display = n===3?'':'none';
+  document.getElementById('step3').style.display = n===3 ? '' : 'none';
   document.getElementById('step3').classList.toggle('active', n===3);
-  document.getElementById('bcFooter').style.display = n===3?'none':'';
-  // Step dots
-  for(let i=1;i<=3;i++){
+  document.getElementById('bcFooter').style.display = n===3 ? 'none' : '';
+  for (let i = 1; i <= 3; i++) {
     const dot = document.getElementById('stepDot'+i);
     dot.classList.remove('active','done');
-    if(i < n) dot.classList.add('done');
-    else if(i === n) dot.classList.add('active');
+    if (i < n) dot.classList.add('done');
+    else if (i === n) dot.classList.add('active');
   }
   document.getElementById('stepLine1').classList.toggle('active', n >= 2);
   document.getElementById('stepLine2').classList.toggle('active', n >= 3);
-  // Summary
-  if(n === 2){
+  if (n === 2) {
     const d = state.selectedDate;
-    const dayNames = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
-    document.getElementById('summaryDate').textContent = dayNames[d.getDay()] + ', ' + d.getDate() + '. ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear();
-    document.getElementById('summaryTime').textContent = state.selectedTime + ' Uhr · 30 Minuten · System-Check';
+    document.getElementById('summaryDate').textContent =
+      DAY_NAMES[d.getDay()] + ', ' + d.getDate() + '. ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear();
+    document.getElementById('summaryTime').textContent =
+      state.selectedTime + ' Uhr · 30 Minuten · Kostenloser System-Check';
   }
-  // Header
   const hdr = document.querySelector('.bc-title');
   const sub = document.querySelector('.bc-sub');
-  if(n===1){hdr.textContent='Termin wählen';sub.textContent='Wählen Sie einen passenden Zeitpunkt für Ihren System-Check.'}
-  if(n===2){hdr.textContent='Ihre Kontaktdaten';sub.textContent='Damit wir den Termin bestätigen und uns vorbereiten können.'}
-  if(n===3){hdr.textContent='Geschafft!';sub.textContent=''}
+  if (n===1) { hdr.textContent='Termin wählen'; sub.textContent='Wählen Sie einen passenden Zeitpunkt für Ihren System-Check.'; }
+  if (n===2) { hdr.textContent='Ihre Kontaktdaten'; sub.textContent='Damit wir den Termin bestätigen und uns vorbereiten können.'; }
+  if (n===3) { hdr.textContent='Geschafft!'; sub.textContent=''; }
   updateBtn();
 }
 
 // ═══ SUBMIT → PIPEDRIVE ═══
-function submitBooking(){
+function submitBooking() {
   const firstName = document.getElementById('fFirstName').value.trim();
   const lastName = document.getElementById('fLastName').value.trim();
   const email = document.getElementById('fEmail').value.trim();
   const phone = document.getElementById('fPhone').value.trim();
-  if(!firstName||!lastName||!email||!phone){alert('Bitte füllen Sie alle Pflichtfelder aus.');return}
+  if (!firstName || !lastName || !email || !phone) {
+    alert('Bitte füllen Sie alle Pflichtfelder aus.');
+    return;
+  }
+  // E-Mail Validierung
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    alert('Bitte geben Sie eine gültige E-Mail-Adresse ein.');
+    return;
+  }
   const company = document.getElementById('fCompany').value.trim();
   const size = document.getElementById('fSize').value;
   const notes = document.getElementById('fNotes').value.trim();
   const d = state.selectedDate;
-  const dayNames = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
-  const dateStr = dayNames[d.getDay()] + ', ' + d.getDate() + '. ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear();
+  const dateStr = DAY_NAMES[d.getDay()] + ', ' + d.getDate() + '. ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear();
   const timeStr = state.selectedTime + ' Uhr';
-  // Build Pipedrive lead note
+  // Slot als gebucht speichern
+  saveBooking(d, state.selectedTime);
+  // Pipedrive Lead Note
   const gclid = sessionStorage.getItem('gclid') || '';
   const utmSource = sessionStorage.getItem('utm_source') || '';
   const utmMedium = sessionStorage.getItem('utm_medium') || '';
@@ -489,9 +675,8 @@ function submitBooking(){
     gclid ? 'gclid: ' + gclid : '',
     utmSource ? 'Quelle: ' + utmSource + ' / ' + utmMedium + ' / ' + utmCampaign : '',
   ].filter(Boolean).join('\n');
-  // Send to Pipedrive via Web Forms API
+  // Pipedrive Web Form Submit
   const PIPEDRIVE_FORM_URL = 'https://webforms.pipedrive.com/f/63tNEpJ3ONLHbsJGN7qUiPS5JurmHTfBOkeYjiH8ym4BGkgziEaPlNcHynX5g4C9XR';
-  // Create hidden iframe for form submission
   const iframe = document.createElement('iframe');
   iframe.name = 'pd_booking_frame';
   iframe.style.display = 'none';
@@ -515,8 +700,8 @@ function submitBooking(){
   });
   document.body.appendChild(form);
   form.submit();
-  setTimeout(() => {form.remove();iframe.remove()}, 5000);
-  // Show success
+  setTimeout(() => { form.remove(); iframe.remove(); }, 5000);
+  // Success
   state.step = 3;
   document.getElementById('successDetail').innerHTML = `
     <div class="success-detail-row"><span class="success-detail-label">Datum</span><span class="success-detail-value">${dateStr}</span></div>
@@ -528,7 +713,7 @@ function submitBooking(){
   `;
   showStep(3);
   // Google Ads Conversion + Enhanced Conversions
-  if(typeof gtag === 'function'){
+  if (typeof gtag === 'function') {
     gtag('set','user_data',{email:email,phone_number:phone});
     gtag('event','conversion',{send_to:'AW-364517411/booking',value:1.0,currency:'EUR'});
     gtag('event','booking_complete',{event_category:'lead',event_label:'system-check',value:1});
