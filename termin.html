@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Termin buchen — HEKO Voice | Kostenloser System-Check</title>
+<meta name="description" content="Buchen Sie Ihren kostenlosen 30-Minuten System-Check mit einem HEKO Voice Berater. Unverbindlich, persönlich, vor Ort oder online.">
+<meta name="robots" content="index,follow">
+<meta property="og:title" content="Termin buchen — HEKO Voice System-Check">
+<meta property="og:description" content="30 Minuten, die Ihre Erreichbarkeit verändern. Jetzt kostenlosen Beratungstermin vereinbaren.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- Google Ads + GA4 -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-364517411"></script>
+<script>
+window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}
+gtag('js',new Date());gtag('config','AW-364517411');gtag('config','G-744VWWPK9B');
+// UTM + gclid tracking
+(function(){var p=new URLSearchParams(location.search);['gclid','utm_source','utm_medium','utm_campaign','utm_term','utm_content'].forEach(function(k){var v=p.get(k);if(v)sessionStorage.setItem(k,v)})})();
+</script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#262455;--blue:#009fe3;--blue-d:#007dbd;--green:#059669;
+  --text:#262455;--text2:#475569;--text3:#94a3b8;
+  --bg:#fff;--bg2:#f8fafc;--border:rgba(0,0,0,.06);
+  --r:12px;--sans:'Poppins',system-ui,sans-serif;
+}
+body{font-family:var(--sans);color:var(--text);background:var(--bg2);-webkit-font-smoothing:antialiased;min-height:100vh}
+a{color:var(--blue);text-decoration:none}
+/* ═══ LAYOUT ═══ */
+.page{display:flex;min-height:100vh}
+.sidebar{width:420px;background:var(--navy);color:#fff;padding:48px 40px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden}
+.sidebar::before{content:'';position:absolute;top:-120px;right:-120px;width:300px;height:300px;border-radius:50%;background:rgba(0,159,227,.08)}
+.sidebar::after{content:'';position:absolute;bottom:-80px;left:-80px;width:200px;height:200px;border-radius:50%;background:rgba(0,159,227,.05)}
+.sb-top{position:relative;z-index:1}
+.sb-bottom{position:relative;z-index:1}
+.logo{display:flex;align-items:center;gap:10px;margin-bottom:48px}
+.logo svg{height:28px}
+.logo-text{font-size:20px;font-weight:700;letter-spacing:-.3px}
+.logo-text span{color:var(--blue);font-weight:800}
+.sb-h{font-size:28px;font-weight:700;line-height:1.2;margin-bottom:12px}
+.sb-h em{font-style:normal;color:var(--blue)}
+.sb-p{font-size:14px;color:rgba(255,255,255,.6);line-height:1.7;margin-bottom:32px}
+.sb-features{list-style:none;display:flex;flex-direction:column;gap:14px}
+.sb-features li{display:flex;align-items:flex-start;gap:12px;font-size:13px;color:rgba(255,255,255,.75);line-height:1.5}
+.sb-features li svg{flex-shrink:0;margin-top:2px;color:var(--blue)}
+.sb-trust{display:flex;flex-direction:column;gap:16px;padding-top:32px;border-top:1px solid rgba(255,255,255,.08)}
+.sb-quote{font-size:13px;font-style:italic;color:rgba(255,255,255,.5);line-height:1.6}
+.sb-quote-author{font-size:12px;color:rgba(255,255,255,.35);margin-top:6px;font-style:normal}
+.sb-badge{display:flex;align-items:center;gap:8px;font-size:11px;color:rgba(255,255,255,.4);letter-spacing:.5px}
+.sb-badge svg{color:var(--green)}
+/* ═══ MAIN ═══ */
+.main{flex:1;display:flex;align-items:center;justify-content:center;padding:40px}
+.booking-card{background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,.06),0 1px 3px rgba(0,0,0,.04);width:100%;max-width:560px;overflow:hidden}
+.bc-header{padding:28px 32px 20px;border-bottom:1px solid var(--border)}
+.bc-title{font-size:18px;font-weight:700;color:var(--navy);margin-bottom:4px}
+.bc-sub{font-size:13px;color:var(--text3)}
+/* ═══ STEPS ═══ */
+.steps-indicator{display:flex;align-items:center;gap:0;padding:20px 32px 0}
+.step-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;border:2px solid var(--border);color:var(--text3);transition:all .3s;flex-shrink:0}
+.step-dot.active{background:var(--blue);border-color:var(--blue);color:#fff}
+.step-dot.done{background:var(--green);border-color:var(--green);color:#fff}
+.step-line{flex:1;height:2px;background:var(--border);transition:background .3s}
+.step-line.active{background:var(--blue)}
+.step-label{font-size:10px;color:var(--text3);text-align:center;margin-top:4px}
+.steps-labels{display:flex;justify-content:space-between;padding:4px 20px 16px;font-size:10px;color:var(--text3)}
+.steps-labels span{flex:0 0 60px;text-align:center}
+/* ═══ CALENDAR ═══ */
+.bc-body{padding:24px 32px 28px}
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.cal-month{font-size:15px;font-weight:600;color:var(--navy)}
+.cal-btn{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);transition:all .2s}
+.cal-btn:hover{border-color:var(--blue);color:var(--blue)}
+.cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:8px}
+.cal-wd{font-size:10px;font-weight:600;color:var(--text3);text-align:center;padding:4px 0;text-transform:uppercase;letter-spacing:.5px}
+.cal-days{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal-day{aspect-ratio:1;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;border:1.5px solid transparent;color:var(--text)}
+.cal-day:hover:not(.disabled):not(.selected){background:rgba(0,159,227,.06);border-color:rgba(0,159,227,.15)}
+.cal-day.selected{background:var(--blue);color:#fff;border-color:var(--blue);font-weight:700}
+.cal-day.today{border-color:var(--blue);color:var(--blue);font-weight:700}
+.cal-day.disabled{color:var(--text3);opacity:.35;cursor:default}
+.cal-day.other-month{opacity:0;pointer-events:none}
+/* ═══ TIME SLOTS ═══ */
+.time-section{margin-top:20px;padding-top:20px;border-top:1px solid var(--border)}
+.time-label{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:10px}
+.time-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.time-slot{padding:10px 8px;border-radius:8px;border:1.5px solid var(--border);text-align:center;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;color:var(--text2)}
+.time-slot:hover{border-color:var(--blue);color:var(--blue);background:rgba(0,159,227,.04)}
+.time-slot.selected{background:var(--blue);color:#fff;border-color:var(--blue);font-weight:700}
+/* ═══ FORM ═══ */
+.form-section{display:none}
+.form-section.active{display:block}
+.form-grid{display:flex;flex-direction:column;gap:14px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:12px;font-weight:600;color:var(--text2)}
+.field label .req{color:var(--blue)}
+.field input,.field select,.field textarea{padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:var(--sans);font-size:14px;color:var(--text);outline:none;transition:border-color .2s;background:#fff;width:100%}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--blue)}
+.field textarea{resize:vertical;min-height:72px}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-note{font-size:11px;color:var(--text3);line-height:1.5;margin-top:4px}
+.form-note svg{vertical-align:-2px;margin-right:3px}
+/* ═══ BUTTONS ═══ */
+.bc-footer{padding:16px 32px 24px;display:flex;gap:10px;align-items:center}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:12px 24px;border-radius:10px;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer;transition:all .25s;border:none}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-primary:hover{background:var(--blue-d);transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,159,227,.25)}
+.btn-primary:disabled{opacity:.4;cursor:default;transform:none;box-shadow:none}
+.btn-back{background:transparent;color:var(--text2);border:1.5px solid var(--border)}
+.btn-back:hover{border-color:var(--text3);color:var(--text)}
+.btn-full{width:100%}
+/* ═══ SUCCESS ═══ */
+.success-view{display:none;text-align:center;padding:48px 32px}
+.success-view.active{display:block}
+.success-icon{width:64px;height:64px;border-radius:50%;background:rgba(5,150,105,.1);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;color:var(--green)}
+.success-h{font-size:20px;font-weight:700;color:var(--navy);margin-bottom:8px}
+.success-p{font-size:14px;color:var(--text2);line-height:1.6;margin-bottom:6px}
+.success-detail{background:var(--bg2);border-radius:10px;padding:16px;margin:20px 0;text-align:left}
+.success-detail-row{display:flex;justify-content:space-between;padding:6px 0;font-size:13px;border-bottom:1px solid var(--border)}
+.success-detail-row:last-child{border:none}
+.success-detail-label{color:var(--text3)}
+.success-detail-value{font-weight:600;color:var(--navy)}
+.success-cta{margin-top:16px;font-size:13px;color:var(--text3)}
+.success-cta a{font-weight:600}
+/* ═══ SELECTED SUMMARY ═══ */
+.selected-summary{background:var(--bg2);border-radius:10px;padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px}
+.ss-icon{width:36px;height:36px;border-radius:8px;background:rgba(0,159,227,.1);display:flex;align-items:center;justify-content:center;color:var(--blue);flex-shrink:0}
+.ss-text{font-size:13px;color:var(--text2);line-height:1.4}
+.ss-text strong{color:var(--navy);display:block;font-size:14px}
+/* ═══ MOBILE ═══ */
+@media(max-width:900px){
+  .page{flex-direction:column}
+  .sidebar{width:100%;padding:32px 24px 28px}
+  .sb-h{font-size:22px}
+  .sb-features{gap:10px}
+  .sb-trust{display:none}
+  .main{padding:20px}
+  .booking-card{max-width:none;border-radius:14px}
+  .bc-header{padding:20px 20px 16px}
+  .bc-body{padding:20px 20px 24px}
+  .bc-footer{padding:14px 20px 20px}
+  .field-row{grid-template-columns:1fr}
+  .time-grid{grid-template-columns:repeat(3,1fr)}
+}
+@media(max-width:480px){
+  .sidebar{padding:24px 20px}
+  .sb-h{font-size:20px}
+  .sb-p{font-size:13px;margin-bottom:20px}
+  .sb-features li{font-size:12px}
+  .logo{margin-bottom:28px}
+  .main{padding:12px}
+  .bc-header{padding:16px 16px 14px}
+  .bc-body{padding:16px 16px 20px}
+  .bc-footer{padding:12px 16px 16px}
+  .bc-title{font-size:16px}
+  .cal-day{font-size:12px}
+  .time-grid{grid-template-columns:repeat(2,1fr)}
+  .success-view{padding:32px 20px}
+  .steps-indicator{padding:16px 20px 0}
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <!-- ═══ SIDEBAR ═══ -->
+  <div class="sidebar">
+    <div class="sb-top">
+      <div class="logo">
+        <svg viewBox="0 0 32 32" width="32" height="32" fill="none"><rect width="32" height="32" rx="8" fill="#009fe3"/><path d="M8 12h4v8H8zM14 10h4v10h-4zM20 14h4v6h-4z" fill="#fff" rx="1"/></svg>
+        <div class="logo-text">HEKO <span>Voice</span></div>
+      </div>
+      <h1 class="sb-h">Kostenloser<br><em>System-Check</em></h1>
+      <p class="sb-p">In 30 Minuten erfahren Sie, ob Ihre aktuelle Telefonanlage Sie Kunden und Umsatz kostet &mdash; und was Sie dagegen tun können.</p>
+      <ul class="sb-features">
+        <li>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          30 Minuten &mdash; persönlich, unverbindlich
+        </li>
+        <li>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          Analyse Ihrer aktuellen Erreichbarkeit
+        </li>
+        <li>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Konkrete Empfehlung &mdash; kein Verkaufsdruck
+        </li>
+        <li>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          Vor Ort in der Region oder per Video-Call
+        </li>
+      </ul>
+    </div>
+    <div class="sb-bottom">
+      <div class="sb-trust">
+        <div class="sb-quote">
+          &bdquo;Nach dem System-Check war sofort klar, dass wir jeden Tag Anrufe verlieren. Zwei Wochen später war HEKO Voice live.&ldquo;
+          <div class="sb-quote-author">&mdash; Marco T., Immobilien Thielscher</div>
+        </div>
+        <div class="sb-badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          Seit über 25 Jahren in der Region &middot; Heko Büroservice GmbH &amp; Co. KG
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ MAIN ═══ -->
+  <div class="main">
+    <div class="booking-card">
+      <div class="bc-header">
+        <div class="bc-title">Termin wählen</div>
+        <div class="bc-sub">Wählen Sie einen passenden Zeitpunkt für Ihren System-Check.</div>
+      </div>
+
+      <!-- Steps Indicator -->
+      <div class="steps-indicator">
+        <div class="step-dot active" id="stepDot1">1</div>
+        <div class="step-line" id="stepLine1"></div>
+        <div class="step-dot" id="stepDot2">2</div>
+        <div class="step-line" id="stepLine2"></div>
+        <div class="step-dot" id="stepDot3">3</div>
+      </div>
+      <div class="steps-labels">
+        <span>Termin</span>
+        <span>Ihre Daten</span>
+        <span>Fertig</span>
+      </div>
+
+      <!-- STEP 1: Calendar + Time -->
+      <div class="bc-body" id="step1">
+        <div class="cal-nav">
+          <button class="cal-btn" onclick="changeMonth(-1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
+          <div class="cal-month" id="calMonth"></div>
+          <button class="cal-btn" onclick="changeMonth(1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>
+        </div>
+        <div class="cal-weekdays">
+          <div class="cal-wd">Mo</div><div class="cal-wd">Di</div><div class="cal-wd">Mi</div>
+          <div class="cal-wd">Do</div><div class="cal-wd">Fr</div><div class="cal-wd">Sa</div><div class="cal-wd">So</div>
+        </div>
+        <div class="cal-days" id="calDays"></div>
+
+        <div class="time-section" id="timeSection" style="display:none">
+          <div class="time-label" id="timeLabel">Verfügbare Zeiten</div>
+          <div class="time-grid" id="timeGrid"></div>
+        </div>
+      </div>
+
+      <!-- STEP 2: Form -->
+      <div class="bc-body form-section" id="step2">
+        <div class="selected-summary" id="selectedSummary">
+          <div class="ss-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+          <div class="ss-text"><strong id="summaryDate"></strong><span id="summaryTime"></span></div>
+        </div>
+        <div class="form-grid">
+          <div class="field-row">
+            <div class="field">
+              <label>Vorname <span class="req">*</span></label>
+              <input type="text" id="fFirstName" placeholder="Max" required>
+            </div>
+            <div class="field">
+              <label>Nachname <span class="req">*</span></label>
+              <input type="text" id="fLastName" placeholder="Mustermann" required>
+            </div>
+          </div>
+          <div class="field">
+            <label>E-Mail <span class="req">*</span></label>
+            <input type="email" id="fEmail" placeholder="max@firma.de" required>
+          </div>
+          <div class="field">
+            <label>Telefon <span class="req">*</span></label>
+            <input type="tel" id="fPhone" placeholder="+49 123 456789" required>
+          </div>
+          <div class="field">
+            <label>Firma</label>
+            <input type="text" id="fCompany" placeholder="Firma GmbH">
+          </div>
+          <div class="field">
+            <label>Anzahl Mitarbeiter</label>
+            <select id="fSize">
+              <option value="">Bitte wählen</option>
+              <option>1–5</option>
+              <option>6–15</option>
+              <option>16–50</option>
+              <option>51–100</option>
+              <option>100+</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Anmerkungen</label>
+            <textarea id="fNotes" placeholder="z.B. aktuelle Anlage, besondere Anforderungen…"></textarea>
+          </div>
+          <div class="form-note">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Ihre Daten werden vertraulich behandelt und ausschließlich für die Terminvereinbarung verwendet.
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3: Success -->
+      <div class="success-view" id="step3">
+        <div class="success-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+        <div class="success-h">Termin bestätigt!</div>
+        <div class="success-p">Wir haben Ihnen eine Bestätigung per E-Mail gesendet.</div>
+        <div class="success-detail" id="successDetail"></div>
+        <div class="success-p">Ein Berater meldet sich kurzfristig bei Ihnen, um den Termin zu bestätigen.</div>
+        <div class="success-cta">
+          Fragen? Rufen Sie uns an: <a href="tel:+4924516606">02451 - 66066</a>
+        </div>
+      </div>
+
+      <!-- Footer Buttons -->
+      <div class="bc-footer" id="bcFooter">
+        <button class="btn btn-back" id="btnBack" style="display:none" onclick="goBack()">← Zurück</button>
+        <button class="btn btn-primary btn-full" id="btnNext" disabled onclick="goNext()">Uhrzeit wählen</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══ STATE ═══
+const state = {
+  step: 1,
+  currentMonth: new Date().getMonth(),
+  currentYear: new Date().getFullYear(),
+  selectedDate: null,
+  selectedTime: null
+};
+const MONTHS = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+const DAYS_SHORT = ['Mo','Di','Mi','Do','Fr','Sa','So'];
+const TIMES_MORNING = ['09:00','09:30','10:00','10:30','11:00','11:30'];
+const TIMES_AFTERNOON = ['13:00','13:30','14:00','14:30','15:00','15:30','16:00','16:30'];
+
+// ═══ CALENDAR ═══
+function renderCalendar(){
+  const m = state.currentMonth, y = state.currentYear;
+  document.getElementById('calMonth').textContent = MONTHS[m] + ' ' + y;
+  const firstDay = new Date(y,m,1).getDay();
+  const startDay = firstDay === 0 ? 6 : firstDay - 1;
+  const daysInMonth = new Date(y,m+1,0).getDate();
+  const today = new Date(); today.setHours(0,0,0,0);
+  let html = '';
+  for(let i=0;i<startDay;i++) html += '<div class="cal-day other-month"></div>';
+  for(let d=1;d<=daysInMonth;d++){
+    const date = new Date(y,m,d);
+    const dayOfWeek = date.getDay();
+    const isPast = date < today;
+    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+    const isToday = date.getTime() === today.getTime();
+    const isSelected = state.selectedDate && date.getTime() === state.selectedDate.getTime();
+    let cls = 'cal-day';
+    if(isPast || isWeekend) cls += ' disabled';
+    else if(isSelected) cls += ' selected';
+    else if(isToday) cls += ' today';
+    html += `<div class="${cls}" ${!isPast && !isWeekend ? `onclick="selectDate(${y},${m},${d})"` : ''}>${d}</div>`;
+  }
+  document.getElementById('calDays').innerHTML = html;
+}
+function changeMonth(dir){
+  state.currentMonth += dir;
+  if(state.currentMonth > 11){state.currentMonth = 0;state.currentYear++}
+  if(state.currentMonth < 0){state.currentMonth = 11;state.currentYear--}
+  renderCalendar();
+}
+function selectDate(y,m,d){
+  state.selectedDate = new Date(y,m,d);
+  state.selectedTime = null;
+  renderCalendar();
+  showTimeSlots();
+  updateBtn();
+}
+function showTimeSlots(){
+  const ts = document.getElementById('timeSection');
+  const d = state.selectedDate;
+  const dayStr = d.getDate() + '. ' + MONTHS[d.getMonth()];
+  document.getElementById('timeLabel').textContent = 'Verfügbare Zeiten am ' + dayStr;
+  // Simulate some slots being taken
+  const seed = d.getDate() * 7 + d.getMonth();
+  const allTimes = [...TIMES_MORNING, ...TIMES_AFTERNOON];
+  const available = allTimes.filter((_,i) => (seed + i*3) % 5 !== 0);
+  let html = '';
+  available.forEach(t => {
+    const sel = state.selectedTime === t ? ' selected' : '';
+    html += `<div class="time-slot${sel}" onclick="selectTime('${t}')">${t} Uhr</div>`;
+  });
+  document.getElementById('timeGrid').innerHTML = html;
+  ts.style.display = 'block';
+}
+function selectTime(t){
+  state.selectedTime = t;
+  showTimeSlots();
+  updateBtn();
+}
+
+// ═══ NAVIGATION ═══
+function updateBtn(){
+  const btn = document.getElementById('btnNext');
+  const back = document.getElementById('btnBack');
+  if(state.step === 1){
+    btn.disabled = !state.selectedDate || !state.selectedTime;
+    btn.textContent = 'Weiter →';
+    back.style.display = 'none';
+  } else if(state.step === 2){
+    btn.disabled = false;
+    btn.textContent = 'Termin buchen';
+    back.style.display = '';
+  }
+}
+function goNext(){
+  if(state.step === 1 && state.selectedDate && state.selectedTime){
+    state.step = 2;
+    showStep(2);
+  } else if(state.step === 2){
+    submitBooking();
+  }
+}
+function goBack(){
+  if(state.step === 2){
+    state.step = 1;
+    showStep(1);
+  }
+}
+function showStep(n){
+  document.getElementById('step1').style.display = n===1?'':'none';
+  document.getElementById('step2').style.display = n===2?'':'none';
+  document.getElementById('step2').classList.toggle('active', n===2);
+  document.getElementById('step3').style.display = n===3?'':'none';
+  document.getElementById('step3').classList.toggle('active', n===3);
+  document.getElementById('bcFooter').style.display = n===3?'none':'';
+  // Step dots
+  for(let i=1;i<=3;i++){
+    const dot = document.getElementById('stepDot'+i);
+    dot.classList.remove('active','done');
+    if(i < n) dot.classList.add('done');
+    else if(i === n) dot.classList.add('active');
+  }
+  document.getElementById('stepLine1').classList.toggle('active', n >= 2);
+  document.getElementById('stepLine2').classList.toggle('active', n >= 3);
+  // Summary
+  if(n === 2){
+    const d = state.selectedDate;
+    const dayNames = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+    document.getElementById('summaryDate').textContent = dayNames[d.getDay()] + ', ' + d.getDate() + '. ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear();
+    document.getElementById('summaryTime').textContent = state.selectedTime + ' Uhr · 30 Minuten · System-Check';
+  }
+  // Header
+  const hdr = document.querySelector('.bc-title');
+  const sub = document.querySelector('.bc-sub');
+  if(n===1){hdr.textContent='Termin wählen';sub.textContent='Wählen Sie einen passenden Zeitpunkt für Ihren System-Check.'}
+  if(n===2){hdr.textContent='Ihre Kontaktdaten';sub.textContent='Damit wir den Termin bestätigen und uns vorbereiten können.'}
+  if(n===3){hdr.textContent='Geschafft!';sub.textContent=''}
+  updateBtn();
+}
+
+// ═══ SUBMIT → PIPEDRIVE ═══
+function submitBooking(){
+  const firstName = document.getElementById('fFirstName').value.trim();
+  const lastName = document.getElementById('fLastName').value.trim();
+  const email = document.getElementById('fEmail').value.trim();
+  const phone = document.getElementById('fPhone').value.trim();
+  if(!firstName||!lastName||!email||!phone){alert('Bitte füllen Sie alle Pflichtfelder aus.');return}
+  const company = document.getElementById('fCompany').value.trim();
+  const size = document.getElementById('fSize').value;
+  const notes = document.getElementById('fNotes').value.trim();
+  const d = state.selectedDate;
+  const dayNames = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+  const dateStr = dayNames[d.getDay()] + ', ' + d.getDate() + '. ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear();
+  const timeStr = state.selectedTime + ' Uhr';
+  // Build Pipedrive lead note
+  const gclid = sessionStorage.getItem('gclid') || '';
+  const utmSource = sessionStorage.getItem('utm_source') || '';
+  const utmMedium = sessionStorage.getItem('utm_medium') || '';
+  const utmCampaign = sessionStorage.getItem('utm_campaign') || '';
+  const leadNote = [
+    'TERMIN-BUCHUNG via Website',
+    '────────────────────────',
+    'Datum: ' + dateStr,
+    'Uhrzeit: ' + timeStr,
+    'Typ: Kostenloser System-Check (30 Min.)',
+    '',
+    company ? 'Firma: ' + company : '',
+    size ? 'Mitarbeiter: ' + size : '',
+    notes ? 'Anmerkungen: ' + notes : '',
+    '',
+    gclid ? 'gclid: ' + gclid : '',
+    utmSource ? 'Quelle: ' + utmSource + ' / ' + utmMedium + ' / ' + utmCampaign : '',
+  ].filter(Boolean).join('\n');
+  // Send to Pipedrive via Web Forms API
+  const PIPEDRIVE_FORM_URL = 'https://webforms.pipedrive.com/f/63tNEpJ3ONLHbsJGN7qUiPS5JurmHTfBOkeYjiH8ym4BGkgziEaPlNcHynX5g4C9XR';
+  // Create hidden iframe for form submission
+  const iframe = document.createElement('iframe');
+  iframe.name = 'pd_booking_frame';
+  iframe.style.display = 'none';
+  document.body.appendChild(iframe);
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = PIPEDRIVE_FORM_URL;
+  form.target = 'pd_booking_frame';
+  const fields = {
+    'first_name': firstName,
+    'last_name': lastName,
+    'email': email,
+    'phone': phone,
+    'company_name': company || (firstName + ' ' + lastName),
+    'note': leadNote
+  };
+  Object.entries(fields).forEach(([k,v]) => {
+    const input = document.createElement('input');
+    input.type = 'hidden'; input.name = k; input.value = v;
+    form.appendChild(input);
+  });
+  document.body.appendChild(form);
+  form.submit();
+  setTimeout(() => {form.remove();iframe.remove()}, 5000);
+  // Show success
+  state.step = 3;
+  document.getElementById('successDetail').innerHTML = `
+    <div class="success-detail-row"><span class="success-detail-label">Datum</span><span class="success-detail-value">${dateStr}</span></div>
+    <div class="success-detail-row"><span class="success-detail-label">Uhrzeit</span><span class="success-detail-value">${timeStr}</span></div>
+    <div class="success-detail-row"><span class="success-detail-label">Dauer</span><span class="success-detail-value">30 Minuten</span></div>
+    <div class="success-detail-row"><span class="success-detail-label">Name</span><span class="success-detail-value">${firstName} ${lastName}</span></div>
+    ${company ? `<div class="success-detail-row"><span class="success-detail-label">Firma</span><span class="success-detail-value">${company}</span></div>` : ''}
+    <div class="success-detail-row"><span class="success-detail-label">E-Mail</span><span class="success-detail-value">${email}</span></div>
+  `;
+  showStep(3);
+  // Google Ads Conversion + Enhanced Conversions
+  if(typeof gtag === 'function'){
+    gtag('set','user_data',{email:email,phone_number:phone});
+    gtag('event','conversion',{send_to:'AW-364517411/booking',value:1.0,currency:'EUR'});
+    gtag('event','booking_complete',{event_category:'lead',event_label:'system-check',value:1});
+  }
+}
+
+// ═══ INIT ═══
+renderCalendar();
+updateBtn();
+</script>
+</body>
+</html>
