@@ -103,15 +103,16 @@ a{color:var(--blue);text-decoration:none}
 .cal-day.few-left{color:var(--amber);font-weight:600}
 .cal-dot{display:block;width:4px;height:4px;border-radius:50%;background:var(--amber);margin:1px auto 0}
 /* ═══ FORM ═══ */
-.form-section{display:none}
-.form-section.active{display:block}
-.form-note{font-size:11px;color:var(--text3);line-height:1.5;margin-top:4px}
-.form-note svg{vertical-align:-2px;margin-right:3px}
-.pd-form-wrap{border-radius:10px;overflow:hidden;min-height:320px;position:relative}
-.pd-form-wrap iframe{border:none!important;width:100%!important;min-height:420px}
-.pd-loader{text-align:center;padding:40px 20px;color:var(--text3);font-size:13px;display:flex;flex-direction:column;align-items:center;gap:12px}
-.pd-spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
+.form-section{height:0;overflow:hidden;opacity:0;padding:0 !important;transition:opacity .3s}
+.form-section.active{height:auto;overflow:visible;opacity:1;padding:24px 32px 28px !important}
+.pd-form-wrap{border-radius:10px;overflow:hidden;min-height:100px}
+.pd-form-wrap iframe{border:none!important;width:100%!important}
+.pd-termin-hint{background:rgba(0,159,227,.06);border:1px solid rgba(0,159,227,.15);border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:var(--navy);line-height:1.5}
+.pd-termin-hint small{color:var(--text3);font-size:11px;display:block;margin-top:4px}
+.pd-termin-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.pd-copy-btn{padding:5px 14px;border-radius:6px;border:1px solid var(--blue);background:transparent;color:var(--blue);font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap}
+.pd-copy-btn:hover{background:var(--blue);color:#fff}
+.pd-copy-btn.copied{background:var(--green);border-color:var(--green);color:#fff}
 /* ═══ BUTTONS ═══ */
 .bc-footer{padding:16px 32px 24px;display:flex;gap:10px;align-items:center}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:12px 24px;border-radius:10px;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer;transition:all .25s;border:none}
@@ -264,11 +265,17 @@ a{color:var(--blue);text-decoration:none}
           <div class="ss-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
           <div class="ss-text"><strong id="summaryDate"></strong><span id="summaryTime"></span></div>
         </div>
-        <div class="pd-form-wrap" id="pdFormWrap">
-          <div class="pd-loader" id="pdLoader">
-            <div class="pd-spinner"></div>
-            Formular wird geladen…
+        <div class="pd-termin-hint" id="pdTerminHint">
+          <div class="pd-termin-row">
+            <div>
+              <strong>Ihr Termin:</strong> <span id="pdTerminText"></span>
+            </div>
+            <button class="pd-copy-btn" onclick="copyTermin()" id="pdCopyBtn" title="Termin kopieren">Kopieren</button>
           </div>
+          <small>Bitte den Termin in das Feld „Terminwunsch" unten einfügen (Strg+V).</small>
+        </div>
+        <div class="pd-form-wrap" id="pdFormWrap">
+          <div class="pipedriveWebForms" data-pd-webforms="https://webforms.pipedrive.com/f/63tNEpJ3ONLHbsJGN7qUiPS5JurmHTfBOkeYjiH8ym4BGkgziEaPlNcHynX5g4C9XR"></div>
         </div>
       </div>
 
@@ -567,7 +574,8 @@ function goBack() {
 }
 function showStep(n) {
   document.getElementById('step1').style.display = n===1 ? '' : 'none';
-  document.getElementById('step2').style.display = n===2 ? '' : 'none';
+  // Step 2: Toggle via CSS class (height:0/auto) — NICHT display:none!
+  // Sonst initialisiert das Pipedrive Widget nicht.
   document.getElementById('step2').classList.toggle('active', n===2);
   document.getElementById('step3').style.display = n===3 ? '' : 'none';
   document.getElementById('step3').classList.toggle('active', n===3);
@@ -586,8 +594,9 @@ function showStep(n) {
       DAY_NAMES[d.getDay()] + ', ' + d.getDate() + '. ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear();
     document.getElementById('summaryTime').textContent =
       state.selectedTime + ' Uhr · 30 Minuten · Kostenloser System-Check';
-    // Pipedrive-Formular dynamisch als Iframe laden
-    loadPipedriveForm();
+    // Termin-Hinweis über dem Pipedrive-Formular
+    var terminText = DAY_NAMES[d.getDay()] + ', ' + d.getDate() + '. ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear() + ' um ' + state.selectedTime + ' Uhr';
+    document.getElementById('pdTerminText').textContent = terminText;
   }
   const hdr = document.querySelector('.bc-title');
   const sub = document.querySelector('.bc-sub');
@@ -598,81 +607,56 @@ function showStep(n) {
 }
 
 // ═══════════════════════════════════════
-//  PIPEDRIVE WEB FORM — DIRECT IFRAME
+//  PIPEDRIVE SUBMISSION DETECTION
 // ═══════════════════════════════════════
-var PD_BASE = 'https://webforms.pipedrive.com/f/63tNEpJ3ONLHbsJGN7qUiPS5JurmHTfBOkeYjiH8ym4BGkgziEaPlNcHynX5g4C9XR';
-var pdLoaded = false;
-
-function loadPipedriveForm() {
-  var wrap = document.getElementById('pdFormWrap');
-  var loader = document.getElementById('pdLoader');
-  var d = state.selectedDate;
-  var dateStr = DAY_NAMES[d.getDay()] + ', ' + d.getDate() + '. ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear();
-  var timeStr = state.selectedTime + ' Uhr';
-  var gclid = sessionStorage.getItem('gclid') || '';
-  var utmSource = sessionStorage.getItem('utm_source') || '';
-  // Termin-Details als Note an Pipedrive übergeben (URL-Parameter)
-  var noteText = 'TERMIN: ' + dateStr + ' um ' + timeStr +
-    ' | Typ: Kostenloser System-Check (30 Min.)' +
-    (gclid ? ' | gclid: ' + gclid : '') +
-    (utmSource ? ' | Quelle: ' + utmSource : '');
-  // Iframe-URL mit vorausgefüllter Note
-  var iframeSrc = PD_BASE + '?note=' + encodeURIComponent(noteText);
-  // Alten Iframe entfernen (falls Datum/Zeit geändert)
-  var oldIframe = wrap.querySelector('iframe');
-  if (oldIframe) oldIframe.remove();
-  // Neuen Iframe erstellen
-  var iframe = document.createElement('iframe');
-  iframe.src = iframeSrc;
-  iframe.style.cssText = 'width:100%;min-height:500px;border:none;border-radius:8px;display:block';
-  iframe.setAttribute('allow', 'clipboard-write');
-  iframe.onload = function() {
-    if (loader) loader.style.display = 'none';
-    iframe.style.opacity = '1';
-  };
-  iframe.style.opacity = '0';
-  iframe.style.transition = 'opacity .3s';
-  wrap.appendChild(iframe);
-  // Submission-Detection starten
-  if (!pdLoaded) {
-    pdLoaded = true;
-    startSubmissionDetection();
-  }
-}
-
-// ═══ SUBMISSION DETECTION ═══
-// Methode 1: postMessage von Pipedrive
-function startSubmissionDetection() {
-  window.addEventListener('message', function(event) {
-    if (!event.origin || event.origin.indexOf('pipedrive') === -1) return;
-    if (state.step !== 2 || state.submitted) return;
-    try {
-      var data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
-      if (data && (data.event === 'formSubmitted' || data.type === 'formSubmitted' ||
-          data.action === 'submitted' || data.success === true ||
-          data.status === 'submitted' || data.formSubmitted === true)) {
-        onFormSubmitted();
-      }
-    } catch(e) {
-      if (typeof event.data === 'string' &&
-         (event.data.indexOf('submit') !== -1 || event.data.indexOf('success') !== -1 ||
-          event.data.indexOf('thank') !== -1)) {
-        onFormSubmitted();
-      }
-    }
+function copyTermin() {
+  var text = document.getElementById('pdTerminText').textContent;
+  navigator.clipboard.writeText(text).then(function() {
+    var btn = document.getElementById('pdCopyBtn');
+    btn.textContent = '✓ Kopiert!';
+    btn.classList.add('copied');
+    setTimeout(function() { btn.textContent = 'Kopieren'; btn.classList.remove('copied'); }, 2000);
+  }).catch(function() {
+    // Fallback: Select text
+    var el = document.getElementById('pdTerminText');
+    var range = document.createRange();
+    range.selectNodeContents(el);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
   });
-  // Methode 2: MutationObserver auf Iframe-Änderungen
+}
+// Methode 1: postMessage von Pipedrive
+window.addEventListener('message', function(event) {
+  if (!event.origin || event.origin.indexOf('pipedrive') === -1) return;
+  if (state.step !== 2 || state.submitted) return;
+  try {
+    var data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+    if (data && (data.event === 'formSubmitted' || data.type === 'formSubmitted' ||
+        data.action === 'submitted' || data.success === true ||
+        data.status === 'submitted' || data.formSubmitted === true)) {
+      onFormSubmitted();
+    }
+  } catch(e) {
+    if (typeof event.data === 'string' &&
+       (event.data.indexOf('submit') !== -1 || event.data.indexOf('success') !== -1 ||
+        event.data.indexOf('thank') !== -1)) {
+      onFormSubmitted();
+    }
+  }
+});
+// Methode 2: MutationObserver — Pipedrive ändert iframe-Höhe nach Submit
+(function() {
   var wrap = document.getElementById('pdFormWrap');
+  if (!wrap) return;
   var observer = new MutationObserver(function() {
     if (state.step !== 2 || state.submitted) return;
     var iframe = wrap.querySelector('iframe');
     if (!iframe) return;
-    // Pipedrive zeigt nach Submit eine Danke-Seite → iframe-Höhe ändert sich
-    var h = parseInt(iframe.style.height || iframe.offsetHeight);
+    var h = parseInt(iframe.style.height || iframe.offsetHeight || 999);
     if (h > 0 && h < 200) onFormSubmitted();
   });
   observer.observe(wrap, { childList: true, subtree: true, attributes: true, attributeFilter: ['style','height'] });
-}
+})();
 
 function onFormSubmitted() {
   if (state.submitted) return;
@@ -680,9 +664,7 @@ function onFormSubmitted() {
   var d = state.selectedDate;
   var dateStr = DAY_NAMES[d.getDay()] + ', ' + d.getDate() + '. ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear();
   var timeStr = state.selectedTime + ' Uhr';
-  // Slot als gebucht speichern
   saveBooking(d, state.selectedTime);
-  // Success anzeigen
   state.step = 3;
   document.getElementById('successDetail').innerHTML =
     '<div class="success-detail-row"><span class="success-detail-label">Datum</span><span class="success-detail-value">' + dateStr + '</span></div>' +
@@ -690,7 +672,6 @@ function onFormSubmitted() {
     '<div class="success-detail-row"><span class="success-detail-label">Dauer</span><span class="success-detail-value">30 Minuten</span></div>' +
     '<div class="success-detail-row"><span class="success-detail-label">Typ</span><span class="success-detail-value">Kostenloser System-Check</span></div>';
   showStep(3);
-  // GA4 + Google Ads
   if (typeof gtag === 'function') {
     gtag('event','conversion',{send_to:'AW-364517411/booking',value:1.0,currency:'EUR'});
     gtag('event','booking_complete',{event_category:'lead',event_label:'system-check',value:1});
@@ -702,5 +683,7 @@ state.submitted = false;
 renderCalendar();
 updateBtn();
 </script>
+<!-- Pipedrive Web Form Loader (initialisiert das Widget) -->
+<script src="https://webforms.pipedrive.com/f/loader"></script>
 </body>
 </html>
