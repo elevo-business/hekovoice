@@ -2,7 +2,8 @@ import { Hono } from 'hono';
 import { logger } from 'hono/logger';
 import { serve } from '@hono/node-server';
 import { env, isProd } from './config.js';
-import { runMigrations } from './db/index.js';
+// Importing the db module also runs migrations (eager init).
+import './db/index.js';
 import { purgeExpiredSessions } from './auth/sessions.js';
 import { authRoutes } from './routes/auth.js';
 import { healthRoutes } from './routes/health.js';
@@ -15,7 +16,6 @@ import { uploadsRoutes } from './routes/uploads.js';
 import { backupRoutes } from './routes/backup.js';
 import { adminRoutes } from './routes/admin.js';
 
-runMigrations();
 purgeExpiredSessions();
 setInterval(purgeExpiredSessions, 60 * 60 * 1000).unref();
 

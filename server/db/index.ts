@@ -45,4 +45,9 @@ export function runMigrations(): void {
   }
 }
 
+// Apply migrations eagerly so any importer can prepare statements at module
+// init without hitting "no such table" errors. Idempotent — only runs once
+// per process (modules are cached).
+runMigrations();
+
 export type Row = Record<string, unknown>;
