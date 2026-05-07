@@ -1,13 +1,19 @@
 import { Hono } from 'hono';
 import { logger } from 'hono/logger';
-import { secureHeaders } from 'hono/secure-headers';
 import { serve } from '@hono/node-server';
 import { env, isProd } from './config.js';
 import { runMigrations } from './db/index.js';
 import { purgeExpiredSessions } from './auth/sessions.js';
 import { authRoutes } from './routes/auth.js';
 import { healthRoutes } from './routes/health.js';
-import { requireAuth } from './middleware/auth.js';
+import { publicRoutes } from './routes/public.js';
+import { sectionsRoutes } from './routes/sections.js';
+import { settingsRoutes } from './routes/settings.js';
+import { mediaRoutes } from './routes/media.js';
+import { usersRoutes } from './routes/users.js';
+import { uploadsRoutes } from './routes/uploads.js';
+import { backupRoutes } from './routes/backup.js';
+import { adminRoutes } from './routes/admin.js';
 
 runMigrations();
 purgeExpiredSessions();
@@ -16,30 +22,32 @@ setInterval(purgeExpiredSessions, 60 * 60 * 1000).unref();
 const app = new Hono();
 
 app.use('*', logger());
-app.use('*', secureHeaders({
-  contentSecurityPolicy: {
-    defaultSrc: ["'self'"],
-    scriptSrc: ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net'],
-    styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://cdn.jsdelivr.net'],
-    imgSrc: ["'self'", 'data:', 'https:'],
-    fontSrc: ["'self'", 'https://fonts.gstatic.com', 'data:'],
-    connectSrc: ["'self'"],
-  },
-}));
 
+// API
 app.route('/api', healthRoutes);
 app.route('/api/auth', authRoutes);
+app.route('/api/sections', sectionsRoutes);
+app.route('/api/settings', settingsRoutes);
+app.route('/api/media', mediaRoutes);
+app.route('/api/users', usersRoutes);
+app.route('/api/backup', backupRoutes);
 
-app.get('/api/admin/ping', requireAuth, (c) => {
-  const user = c.get('user');
-  return c.json({ pong: true, user });
+// Static: uploaded media
+app.route('/uploads', uploadsRoutes);
+
+// Admin SPA (HTML + assets)
+app.route('/admin', adminRoutes);
+
+// Public site
+app.route('/', publicRoutes);
+
+app.notFound((c) => {
+  const accept = c.req.header('accept') ?? '';
+  if (accept.includes('text/html')) {
+    return c.html('<!doctype html><meta charset="utf-8"><title>404</title><h1>404</h1><p>Seite nicht gefunden.</p>', 404);
+  }
+  return c.json({ error: 'not_found' }, 404);
 });
-
-app.get('/', (c) =>
-  c.text('HEKO Voice CMS — Phase 1 backend running. Public renderer arrives in Phase 2.'),
-);
-
-app.notFound((c) => c.json({ error: 'not_found' }, 404));
 
 app.onError((err, c) => {
   console.error('[error]', err);

@@ -1,0 +1,30 @@
+services:
+  cms:
+    build: .
+    image: hekovoice-cms:latest
+    container_name: hekovoice-cms
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      DATABASE_PATH: /data/cms.db
+      SESSION_SECRET: ${SESSION_SECRET:?set in .env or Coolify env}
+      SESSION_TTL_HOURS: 168
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-hey@elevo.solutions}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?set on first run, then unset}
+      ADMIN_NAME: ${ADMIN_NAME:-Admin}
+      PUBLIC_URL: ${PUBLIC_URL:-https://hekocms-preview.elevo.solutions}
+      CLOUDFLARE_API_TOKEN: ${CLOUDFLARE_API_TOKEN:-}
+      CF_ZONE_ID: ${CF_ZONE_ID:-}
+    volumes:
+      - cms-data:/data
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  cms-data:

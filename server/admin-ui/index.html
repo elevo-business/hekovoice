@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HEKO Voice — CMS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/admin/styles.css">
+</head>
+<body>
+
+<div id="app" x-data="cms()" x-init="init()" x-cloak>
+
+  <!-- ─── Login screen ───────────────────────────────────── -->
+  <template x-if="view === 'login'">
+    <div class="login-wrap">
+      <div class="login-card">
+        <div class="brand">
+          <div class="brand-mark"></div>
+          <h1>HEKO Voice CMS</h1>
+        </div>
+        <p class="muted">Bitte anmelden, um Inhalte zu bearbeiten.</p>
+        <form @submit.prevent="login()" class="form">
+          <label>E-Mail
+            <input type="email" x-model="loginForm.email" autocomplete="email" required>
+          </label>
+          <label>Passwort
+            <input type="password" x-model="loginForm.password" autocomplete="current-password" required>
+          </label>
+          <div x-show="loginError" class="alert error" x-text="loginError"></div>
+          <button class="btn primary" :disabled="loading">
+            <span x-show="!loading">Anmelden</span>
+            <span x-show="loading">…</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </template>
+
+  <!-- ─── App shell (after login) ───────────────────────── -->
+  <template x-if="view === 'app'">
+    <div class="shell">
+      <aside class="sidebar">
+        <div class="brand small">
+          <div class="brand-mark"></div>
+          <span>CMS</span>
+        </div>
+        <nav class="nav">
+          <button :class="{active: tab==='page-index'}" @click="setTab('page-index')">📄 Startseite</button>
+          <button :class="{active: tab==='page-termin'}" @click="setTab('page-termin')">📅 Termin-Seite</button>
+          <button :class="{active: tab==='media'}" @click="setTab('media')">🖼️ Mediathek</button>
+          <button :class="{active: tab==='settings'}" @click="setTab('settings')" x-show="user.role==='admin'">⚙️ Einstellungen</button>
+          <button :class="{active: tab==='users'}" @click="setTab('users')" x-show="user.role==='admin'">👥 Benutzer</button>
+          <button :class="{active: tab==='backup'}" @click="setTab('backup')" x-show="user.role==='admin'">💾 Backup</button>
+        </nav>
+        <div class="sidebar-foot">
+          <div class="user-pill">
+            <div class="avatar" x-text="user.name.slice(0,1).toUpperCase()"></div>
+            <div>
+              <div class="user-name" x-text="user.name"></div>
+              <div class="user-role" x-text="user.role"></div>
+            </div>
+          </div>
+          <button class="btn ghost full" @click="logout()">Abmelden</button>
+        </div>
+      </aside>
+
+      <main class="main">
+
+        <!-- toast -->
+        <div class="toasts">
+          <template x-for="t in toasts" :key="t.id">
+            <div class="toast" :class="t.kind" x-text="t.msg"></div>
+          </template>
+        </div>
+
+        <!-- Page sections view -->
+        <template x-if="tab.startsWith('page-')">
+          <div>
+            <header class="page-head">
+              <div>
+                <h2 x-text="currentPageTitle()"></h2>
+                <p class="muted">Sections per Drag & Drop sortieren · klicken zum Bearbeiten · sichtbar/unsichtbar schalten.</p>
+              </div>
+              <div class="actions">
+                <a :href="currentPageUrl()" target="_blank" class="btn ghost">↗ Vorschau</a>
+                <button class="btn primary" @click="openAddSection()" x-show="user.role==='admin'">+ Section hinzufügen</button>
+              </div>
+            </header>
+
+            <div class="section-list" id="section-list">
+              <template x-for="(s,idx) in sections" :key="s.id">
+                <div class="section-card"
+                     :class="{hidden: !s.visible}"
+                     :data-id="s.id"
+                     draggable="true"
+                     @dragstart="onDragStart($event, idx)"
+                     @dragover.prevent="onDragOver($event, idx)"
+                     @drop.prevent="onDrop($event, idx)"
+                     @dragend="onDragEnd()">
+                  <div class="drag" title="Ziehen zum Sortieren">⋮⋮</div>
+                  <div class="meta" @click="openEditSection(s)">
+                    <div class="type-badge" x-text="typeLabel(s.type)"></div>
+                    <div class="label" x-text="sectionLabel(s)"></div>
+                  </div>
+                  <div class="row-actions">
+                    <button class="icon" @click="toggleVisibility(s)" :title="s.visible?'Ausblenden':'Einblenden'">
+                      <span x-text="s.visible?'👁️':'🚫'"></span>
+                    </button>
+                    <button class="icon" @click="openEditSection(s)" title="Bearbeiten">✏️</button>
+                    <button class="icon danger" @click="confirmDelete(s)" title="Löschen" x-show="user.role==='admin'">🗑</button>
+                  </div>
+                </div>
+              </template>
+              <div x-show="sections.length===0" class="empty">Noch keine Sections — füge welche hinzu.</div>
+            </div>
+          </div>
+        </template>
+
+        <!-- Media library -->
+        <template x-if="tab==='media'">
+          <div>
+            <header class="page-head">
+              <div><h2>Mediathek</h2><p class="muted">Bilder hochladen und verwalten.</p></div>
+              <div class="actions">
+                <label class="btn primary upload-label">
+                  + Bild hochladen
+                  <input type="file" accept="image/*" @change="uploadFile($event)" hidden>
+                </label>
+              </div>
+            </header>
+            <div class="media-grid">
+              <template x-for="m in media" :key="m.id">
+                <div class="media-card">
+                  <img :src="m.url" :alt="m.alt||m.filename" loading="lazy">
+                  <div class="media-meta">
+                    <input type="text" placeholder="Alt-Text…" :value="m.alt||''" @blur="updateAlt(m, $event.target.value)">
+                    <div class="media-row">
+                      <button class="link" @click="copyUrl(m.url)">URL kopieren</button>
+                      <button class="link danger" @click="deleteMedia(m)" x-show="user.role==='admin'">Löschen</button>
+                    </div>
+                    <div class="muted small" x-text="formatSize(m.size_bytes)"></div>
+                  </div>
+                </div>
+              </template>
+              <div x-show="media.length===0" class="empty">Noch keine Bilder.</div>
+            </div>
+          </div>
+        </template>
+
+        <!-- Settings -->
+        <template x-if="tab==='settings'">
+          <div>
+            <header class="page-head">
+              <div><h2>Einstellungen</h2><p class="muted">Globale Werte (Tracking, Kontakt, Meta-Tags). Änderungen wirken auf beide Seiten.</p></div>
+              <div class="actions">
+                <button class="btn primary" @click="saveSettings()" :disabled="loading">Speichern</button>
+              </div>
+            </header>
+            <div class="settings-grid">
+              <template x-for="group in settingsGroups" :key="group.title">
+                <fieldset>
+                  <legend x-text="group.title"></legend>
+                  <template x-for="key in group.keys" :key="key">
+                    <label>
+                      <span x-text="settingsLabel(key)"></span>
+                      <input type="text" x-model="settings[key]" :placeholder="key">
+                    </label>
+                  </template>
+                </fieldset>
+              </template>
+            </div>
+          </div>
+        </template>
+
+        <!-- Users -->
+        <template x-if="tab==='users'">
+          <div>
+            <header class="page-head">
+              <div><h2>Benutzer</h2><p class="muted">Wer darf das CMS bedienen.</p></div>
+              <div class="actions"><button class="btn primary" @click="openAddUser()">+ Benutzer anlegen</button></div>
+            </header>
+            <table class="data">
+              <thead><tr><th>Name</th><th>E-Mail</th><th>Rolle</th><th>Letzter Login</th><th></th></tr></thead>
+              <tbody>
+                <template x-for="u in users" :key="u.id">
+                  <tr>
+                    <td x-text="u.name"></td>
+                    <td x-text="u.email"></td>
+                    <td><span class="role-tag" :class="u.role" x-text="u.role"></span></td>
+                    <td x-text="formatDate(u.last_login_at)"></td>
+                    <td class="row-actions">
+                      <button class="icon" @click="openEditUser(u)">✏️</button>
+                      <button class="icon danger" @click="deleteUser(u)" x-show="u.id !== user.id">🗑</button>
+                    </td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+        </template>
+
+        <!-- Backup -->
+        <template x-if="tab==='backup'">
+          <div>
+            <header class="page-head">
+              <div><h2>Backup &amp; Export</h2><p class="muted">Komplette Inhalte als JSON sichern.</p></div>
+            </header>
+            <div class="card">
+              <p>Lädt eine JSON-Datei mit allen Sections, Settings, Benutzern (ohne Passwörter) und Mediathek-Metadaten.</p>
+              <a class="btn primary" href="/api/backup/export" download>⬇ Backup herunterladen</a>
+            </div>
+          </div>
+        </template>
+
+      </main>
+    </div>
+  </template>
+
+  <!-- ─── Section Editor Modal ───────────────────────────── -->
+  <div class="modal" x-show="modal==='section-edit'" @keydown.escape.window="closeModal()">
+    <div class="modal-card lg">
+      <header class="modal-head">
+        <h3>
+          <span x-show="!edit.id">Neue Section</span>
+          <span x-show="edit.id" x-text="'Section bearbeiten · ' + sectionLabel(edit)"></span>
+        </h3>
+        <button class="icon" @click="closeModal()">✕</button>
+      </header>
+      <div class="modal-body">
+        <div class="editor-tabs">
+          <button :class="{active: editTab==='form'}" @click="editTab='form'">Formular</button>
+          <button :class="{active: editTab==='json'}" @click="editTab='json'">JSON</button>
+          <button :class="{active: editTab==='revisions'}" @click="loadRevisions()" x-show="edit.id">Versionen</button>
+        </div>
+
+        <div x-show="editTab==='form'">
+          <label>Section-Typ
+            <select x-model="edit.type" @change="onTypeChange()">
+              <template x-for="t in types" :key="t.id">
+                <option :value="t.id" x-text="t.label"></option>
+              </template>
+            </select>
+            <small class="muted" x-text="typeDescription(edit.type)"></small>
+          </label>
+          <hr>
+          <div x-html="renderEditFormHtml()"></div>
+          <div id="dynamic-form-host"></div>
+        </div>
+
+        <div x-show="editTab==='json'">
+          <label>Daten als JSON
+            <textarea x-model="edit.dataJson" rows="20" spellcheck="false"></textarea>
+            <small class="muted">Vorsicht: Eingabe muss gültiges JSON sein. Schema-Validierung erfolgt beim Speichern.</small>
+          </label>
+        </div>
+
+        <div x-show="editTab==='revisions'">
+          <p class="muted" x-show="revisions.length===0">Noch keine Versionen.</p>
+          <ul class="revisions">
+            <template x-for="r in revisions" :key="r.id">
+              <li>
+                <div>
+                  <strong x-text="formatDate(r.changed_at)"></strong>
+                  <small class="muted" x-text="r.comment||''"></small>
+                </div>
+                <button class="btn ghost" @click="restoreRevision(r)">Wiederherstellen</button>
+              </li>
+            </template>
+          </ul>
+        </div>
+      </div>
+      <footer class="modal-foot">
+        <label class="inline">
+          <input type="checkbox" x-model="edit.visible">
+          Sichtbar
+        </label>
+        <div class="grow"></div>
+        <button class="btn ghost" @click="closeModal()">Abbrechen</button>
+        <button class="btn primary" @click="saveSection()" :disabled="loading">Speichern</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ─── User Modal ─────────────────────────────────────── -->
+  <div class="modal" x-show="modal==='user-edit'" @keydown.escape.window="closeModal()">
+    <div class="modal-card">
+      <header class="modal-head">
+        <h3 x-text="userEdit.id ? 'Benutzer bearbeiten' : 'Neuen Benutzer anlegen'"></h3>
+        <button class="icon" @click="closeModal()">✕</button>
+      </header>
+      <div class="modal-body">
+        <label>Name<input type="text" x-model="userEdit.name"></label>
+        <label x-show="!userEdit.id">E-Mail<input type="email" x-model="userEdit.email"></label>
+        <label>Rolle
+          <select x-model="userEdit.role">
+            <option value="editor">Editor (nur Inhalte)</option>
+            <option value="admin">Admin (alles)</option>
+          </select>
+        </label>
+        <label x-text="userEdit.id ? 'Neues Passwort (leer = nicht ändern)' : 'Passwort'">
+          <input type="password" x-model="userEdit.password" autocomplete="new-password">
+          <small class="muted">Min. 10 Zeichen.</small>
+        </label>
+      </div>
+      <footer class="modal-foot">
+        <button class="btn ghost" @click="closeModal()">Abbrechen</button>
+        <button class="btn primary" @click="saveUser()" :disabled="loading">Speichern</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ─── Confirm Modal ──────────────────────────────────── -->
+  <div class="modal" x-show="modal==='confirm'" @keydown.escape.window="closeModal()">
+    <div class="modal-card sm">
+      <header class="modal-head"><h3 x-text="confirmData.title || 'Sicher?'"></h3></header>
+      <div class="modal-body">
+        <p x-text="confirmData.message"></p>
+      </div>
+      <footer class="modal-foot">
+        <button class="btn ghost" @click="closeModal()">Abbrechen</button>
+        <button class="btn danger" @click="confirmData.action(); closeModal()">Bestätigen</button>
+      </footer>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js" defer></script>
+<script src="/admin/app.js" defer></script>
+</body>
+</html>
