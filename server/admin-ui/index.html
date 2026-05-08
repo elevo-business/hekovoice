@@ -244,11 +244,66 @@
       </header>
       <div class="modal-body">
         <div class="editor-tabs">
-          <button :class="{active: editTab==='form'}" @click="editTab='form'">Formular</button>
-          <button :class="{active: editTab==='json'}" @click="editTab='json'">JSON</button>
+          <button :class="{active: editTab==='texts'}" @click="switchToTextsTab()" x-show="edit.type==='raw_html'">📝 Texte</button>
+          <button :class="{active: editTab==='form'}" @click="editTab='form'" x-show="edit.type!=='raw_html'">Formular</button>
+          <button :class="{active: editTab==='html'}" @click="editTab='html'" x-show="edit.type==='raw_html'">⚙️ HTML-Code</button>
+          <button :class="{active: editTab==='json'}" @click="editTab='json'" x-show="edit.type!=='raw_html'">JSON</button>
           <button :class="{active: editTab==='revisions'}" @click="loadRevisions()" x-show="edit.id">Versionen</button>
         </div>
 
+        <!-- TEXTS TAB (raw_html, no-code mode) -->
+        <div x-show="editTab==='texts'">
+          <label>
+            <span>Bezeichnung dieser Section (interner Name)</span>
+            <input type="text" x-model="edit.data.label" placeholder="z.B. Hero, FAQ, Footer">
+          </label>
+          <details class="advanced-toggle">
+            <summary>Section-Typ ändern (für Profis)</summary>
+            <label>
+              <span>Typ</span>
+              <select x-model="edit.type" @change="onTypeChange()">
+                <template x-for="t in types" :key="t.id">
+                  <option :value="t.id" x-text="t.label"></option>
+                </template>
+              </select>
+              <small class="muted" x-text="typeDescription(edit.type)"></small>
+            </label>
+          </details>
+          <div class="text-fields-info">
+            Hier siehst du alle Texte aus dieser Section. Klick rein und ändere was du willst — Layout und Bilder bleiben unverändert.
+            <br><strong x-text="extractedFields.length + ' bearbeitbare Texte gefunden'"></strong>
+            <span x-show="extractedFields.length===0" class="muted"> · Diese Section enthält keine direkt editierbaren Texte (z.B. nur Bilder/Code) — verwende den HTML-Code-Tab.</span>
+          </div>
+          <div class="text-fields">
+            <template x-for="(field, idx) in extractedFields" :key="field.id">
+              <div class="text-field" :data-kind="field.kind">
+                <div class="text-field-label">
+                  <span class="kind-badge" x-text="field.label"></span>
+                </div>
+                <template x-if="field.kind === 'paragraph' || (field.text && field.text.length > 80)">
+                  <textarea rows="3" :value="field.text" @input="updateExtractedField(idx, 'text', $event.target.value)"></textarea>
+                </template>
+                <template x-if="field.kind !== 'paragraph' && (!field.text || field.text.length <= 80)">
+                  <input type="text" :value="field.text" @input="updateExtractedField(idx, 'text', $event.target.value)">
+                </template>
+                <template x-if="field.kind === 'link'">
+                  <input type="text" :value="field.href" @input="updateExtractedField(idx, 'href', $event.target.value)" placeholder="URL — z.B. /termin oder https://..." class="url-input">
+                </template>
+              </div>
+            </template>
+          </div>
+        </div>
+
+        <!-- HTML TAB (raw_html, power-user mode) -->
+        <div x-show="editTab==='html'">
+          <label>
+            <span>HTML-Code dieser Section</span>
+            <textarea x-model="edit.data.html" @blur="extractTexts()" rows="20" spellcheck="false"></textarea>
+            <small class="muted">Vorsicht — falsche Tags können das Layout brechen. Nach dem Schließen wird die „Texte"-Ansicht aktualisiert.</small>
+          </label>
+        </div>
+
+        <!-- FORM TAB (typed sections only) -->
         <div x-show="editTab==='form'">
           <label>Section-Typ
             <select x-model="edit.type" @change="onTypeChange()">

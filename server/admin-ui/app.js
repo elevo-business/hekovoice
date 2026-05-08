@@ -170,7 +170,6 @@ window.cms = function () {
     openAddSection() {
       this.edit = { id: null, type: 'raw_html', visible: true, data: null, dataJson: '' };
       this.onTypeChange();
-      this.editTab = 'form';
       this.modal = 'section-edit';
       this.$nextTick(() => this.renderEditForm());
     },
@@ -180,16 +179,49 @@ window.cms = function () {
         data: JSON.parse(JSON.stringify(s.data || {})),
         dataJson: JSON.stringify(s.data || {}, null, 2),
       };
-      this.editTab = 'form';
+      this.editTab = s.type === 'raw_html' ? 'texts' : 'form';
       this.revisions = [];
       this.modal = 'section-edit';
+      if (s.type === 'raw_html') this.extractTexts();
       this.$nextTick(() => this.renderEditForm());
+    },
+    /* ─── Text extraction (raw_html sections, no-code mode) ── */
+    extractedFields: [],
+    extractTexts() {
+      if (!this.edit || this.edit.type !== 'raw_html') {
+        this.extractedFields = [];
+        return;
+      }
+      const html = this.edit.data?.html || '';
+      const result = parseEditableFields(html);
+      this.extractedFields = result.fields;
+      // Persist marked HTML so subsequent edits address the same elements.
+      this.edit.data.html = result.markedHtml;
+      this.edit.dataJson = JSON.stringify(this.edit.data, null, 2);
+    },
+    updateExtractedField(idx, key, value) {
+      const field = this.extractedFields[idx];
+      if (!field) return;
+      field[key] = value;
+      this.edit.data.html = applyFieldsToHtml(this.edit.data.html, this.extractedFields);
+      this.edit.dataJson = JSON.stringify(this.edit.data, null, 2);
+    },
+    switchToTextsTab() {
+      this.editTab = 'texts';
+      // Re-extract in case HTML was edited via HTML tab
+      this.extractTexts();
     },
     onTypeChange() {
       const t = this.types.find((x) => x.id === this.edit.type);
       if (!t) return;
       this.edit.data = JSON.parse(JSON.stringify(t.defaults));
       this.edit.dataJson = JSON.stringify(this.edit.data, null, 2);
+      if (this.edit.type === 'raw_html') {
+        this.editTab = 'texts';
+        this.extractTexts();
+      } else {
+        this.editTab = 'form';
+      }
       this.$nextTick(() => this.renderEditForm());
     },
 
@@ -299,6 +331,10 @@ window.cms = function () {
         if (this.editTab === 'json') {
           try { data = JSON.parse(this.edit.dataJson); }
           catch (e) { this.toast('Ungültiges JSON: ' + e.message, 'error'); return; }
+        }
+        // Strip the temporary data-cms-edit markers from raw_html before saving
+        if (this.edit.type === 'raw_html' && data?.html) {
+          data = { ...data, html: stripCmsEditMarkers(data.html) };
         }
         if (this.edit.id) {
           await api('/sections/' + this.edit.id, {
@@ -519,6 +555,74 @@ window.cms = function () {
 
 function humanize(k) {
   return String(k).replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+/* ─── HTML text-field extractor for non-coders ────────────────
+ * parseEditableFields(html) walks the HTML once, finds "leaf" content
+ * elements (h1..h6, p, blockquote, a, button, li) — leaf meaning they
+ * contain no further editable element. Each gets a stable data-cms-edit
+ * marker so we can update its text/href across re-renders without re-
+ * indexing. The marker is stripped on save (see stripCmsEditMarkers). */
+const EDITABLE_TAGS = new Set(['h1','h2','h3','h4','h5','h6','p','a','button','li','blockquote']);
+const SKIP_TAGS = new Set(['script','style','noscript','svg','iframe','canvas','template']);
+
+function parseEditableFields(html) {
+  const doc = new DOMParser().parseFromString('<div id="cms-root">' + (html || '') + '</div>', 'text/html');
+  const root = doc.getElementById('cms-root');
+  const fields = [];
+  let nextId = 1;
+  function hasEditableDescendant(node) {
+    for (const child of node.querySelectorAll('*')) {
+      if (EDITABLE_TAGS.has(child.tagName.toLowerCase())) return true;
+    }
+    return false;
+  }
+  function walk(node) {
+    if (!node || node.nodeType !== 1) return;
+    const tag = node.tagName.toLowerCase();
+    if (SKIP_TAGS.has(tag)) return;
+    if (EDITABLE_TAGS.has(tag) && !hasEditableDescendant(node)) {
+      const text = (node.textContent || '').trim();
+      if (text.length > 0) {
+        const id = 'cms' + nextId++;
+        node.setAttribute('data-cms-edit', id);
+        const field = { id, tag, text, original: text };
+        if (/^h[1-6]$/.test(tag)) { field.kind = 'heading'; field.label = 'Überschrift ' + tag.toUpperCase(); }
+        else if (tag === 'p') { field.kind = 'paragraph'; field.label = 'Absatz'; }
+        else if (tag === 'blockquote') { field.kind = 'paragraph'; field.label = 'Zitat'; }
+        else if (tag === 'a') { field.kind = 'link'; field.href = node.getAttribute('href') || ''; field.label = 'Link'; }
+        else if (tag === 'button') { field.kind = 'button'; field.label = 'Button'; }
+        else if (tag === 'li') { field.kind = 'listitem'; field.label = 'Listeneintrag'; }
+        fields.push(field);
+        return;
+      }
+    }
+    for (const child of node.children) walk(child);
+  }
+  walk(root);
+  return { markedHtml: root.innerHTML, fields };
+}
+
+function applyFieldsToHtml(html, fields) {
+  const doc = new DOMParser().parseFromString('<div id="cms-root">' + (html || '') + '</div>', 'text/html');
+  const root = doc.getElementById('cms-root');
+  for (const field of fields) {
+    const el = root.querySelector('[data-cms-edit="' + field.id + '"]');
+    if (!el) continue;
+    el.textContent = field.text;
+    if (field.kind === 'link' && typeof field.href === 'string') {
+      if (field.href.length > 0) el.setAttribute('href', field.href);
+      else el.removeAttribute('href');
+    }
+  }
+  return root.innerHTML;
+}
+
+function stripCmsEditMarkers(html) {
+  const doc = new DOMParser().parseFromString('<div id="cms-root">' + (html || '') + '</div>', 'text/html');
+  const root = doc.getElementById('cms-root');
+  root.querySelectorAll('[data-cms-edit]').forEach((el) => el.removeAttribute('data-cms-edit'));
+  return root.innerHTML;
 }
 
 const FIELD_LABELS_DE = {
