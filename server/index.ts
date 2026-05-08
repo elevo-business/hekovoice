@@ -6,6 +6,7 @@ import { env, isProd } from './config.js';
 import './db/index.js';
 import { purgeExpiredSessions } from './auth/sessions.js';
 import { seedInitialContent } from './lib/seed-content.js';
+import { seedInitialUser } from './lib/seed-user.js';
 import { authRoutes } from './routes/auth.js';
 import { healthRoutes } from './routes/health.js';
 import { publicRoutes } from './routes/public.js';
@@ -19,6 +20,13 @@ import { adminRoutes } from './routes/admin.js';
 
 purgeExpiredSessions();
 setInterval(purgeExpiredSessions, 60 * 60 * 1000).unref();
+
+// Bootstrap admin user from ADMIN_EMAIL/ADMIN_PASSWORD if missing.
+try {
+  await seedInitialUser();
+} catch (err) {
+  console.error('[seed-user] failed:', err);
+}
 
 // Auto-seed sections from bundled index.html / termin.html on first boot.
 // No-op once any page has sections — admin can edit freely afterwards.
