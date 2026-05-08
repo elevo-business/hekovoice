@@ -195,6 +195,8 @@ button.icon.danger:hover{background:rgba(220,38,38,.08);color:var(--red)}
 .text-field[data-kind="link"] .kind-badge{background:rgba(5,150,105,.08);color:var(--green)}
 .text-field[data-kind="button"] .kind-badge{background:rgba(217,119,6,.08);color:var(--amber)}
 .text-field[data-kind="listitem"] .kind-badge{background:rgba(139,92,246,.08);color:#7c3aed}
+.text-field[data-kind="scriptString"]{background:rgba(217,119,6,.04);border-color:rgba(217,119,6,.18)}
+.text-field[data-kind="scriptString"] .kind-badge{background:rgba(217,119,6,.1);color:var(--amber)}
 .text-field input,.text-field textarea{margin-bottom:0}
 .text-field .url-input{margin-top:6px;font-family:'JetBrains Mono','SF Mono',Menlo,monospace;font-size:12.5px}
 .advanced-toggle{margin-bottom:14px;font-size:13px}

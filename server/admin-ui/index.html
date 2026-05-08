@@ -305,11 +305,14 @@
                 <div class="text-field" :data-kind="field.kind">
                   <div class="text-field-label">
                     <span class="kind-badge" x-text="field.label"></span>
+                    <template x-if="field.kind === 'scriptString'">
+                      <span class="muted small" title="Dieser Text steckt im JavaScript-Code dieser Section. Funktional bleibt alles erhalten — nur den sichtbaren Text ändern.">in JavaScript-Code</span>
+                    </template>
                   </div>
-                  <template x-if="field.kind === 'paragraph' || (field.text && field.text.length > 80)">
-                    <textarea rows="3" :value="field.text" @input="updateExtractedField(idx, 'text', $event.target.value)"></textarea>
+                  <template x-if="field.kind === 'paragraph' || field.kind === 'scriptString' || (field.text && field.text.length > 80)">
+                    <textarea :rows="field.kind === 'scriptString' ? 4 : 3" :value="field.text" @input="updateExtractedField(idx, 'text', $event.target.value)"></textarea>
                   </template>
-                  <template x-if="field.kind !== 'paragraph' && (!field.text || field.text.length <= 80)">
+                  <template x-if="field.kind !== 'paragraph' && field.kind !== 'scriptString' && (!field.text || field.text.length <= 80)">
                     <input type="text" :value="field.text" @input="updateExtractedField(idx, 'text', $event.target.value)">
                   </template>
                   <template x-if="field.kind === 'link'">

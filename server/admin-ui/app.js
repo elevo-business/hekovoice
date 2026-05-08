@@ -586,9 +586,19 @@ function humanize(k) {
  * elements (h1..h6, p, blockquote, a, button, li) — leaf meaning they
  * contain no further editable element. Each gets a stable data-cms-edit
  * marker so we can update its text/href across re-renders without re-
- * indexing. The marker is stripped on save (see stripCmsEditMarkers). */
+ * indexing.
+ *
+ * It also walks <script> tags and pulls out string literals that look
+ * like user-visible content (length, contains spaces, not URL/path/
+ * identifier). Each is wrapped with a `/*cmsstrN*\/` comment-marker
+ * placed immediately before the quoted string so subsequent updates can
+ * locate it deterministically.
+ *
+ * Both kinds of markers are stripped on save (see stripCmsEditMarkers).
+ */
 const EDITABLE_TAGS = new Set(['h1','h2','h3','h4','h5','h6','p','a','button','li','blockquote']);
-const SKIP_TAGS = new Set(['script','style','noscript','svg','iframe','canvas','template']);
+const SKIP_TAGS = new Set(['style','noscript','svg','iframe','canvas','template']);
+const SCRIPT_MIN_LEN = 12;
 
 function parseEditableFields(html) {
   const doc = new DOMParser().parseFromString('<div id="cms-root">' + (html || '') + '</div>', 'text/html');
@@ -605,6 +615,15 @@ function parseEditableFields(html) {
     if (!node || node.nodeType !== 1) return;
     const tag = node.tagName.toLowerCase();
     if (SKIP_TAGS.has(tag)) return;
+    if (tag === 'script') {
+      const result = markScriptStrings(node.textContent || '', nextId);
+      if (result.fields.length > 0) {
+        node.textContent = result.content;
+        for (const f of result.fields) fields.push(f);
+        nextId = result.nextId;
+      }
+      return;
+    }
     if (EDITABLE_TAGS.has(tag) && !hasEditableDescendant(node)) {
       const text = (node.textContent || '').trim();
       if (text.length > 0) {
@@ -630,13 +649,42 @@ function parseEditableFields(html) {
 function applyFieldsToHtml(html, fields) {
   const doc = new DOMParser().parseFromString('<div id="cms-root">' + (html || '') + '</div>', 'text/html');
   const root = doc.getElementById('cms-root');
+  // HTML element edits first
   for (const field of fields) {
+    if (field.kind === 'scriptString') continue;
     const el = root.querySelector('[data-cms-edit="' + field.id + '"]');
     if (!el) continue;
     el.textContent = field.text;
     if (field.kind === 'link' && typeof field.href === 'string') {
       if (field.href.length > 0) el.setAttribute('href', field.href);
       else el.removeAttribute('href');
+    }
+  }
+  // Script string edits — mutate each script's textContent in sequence so
+  // multiple edits in the same script all stick.
+  const scripts = root.querySelectorAll('script');
+  for (const field of fields) {
+    if (field.kind !== 'scriptString') continue;
+    const marker = '/*' + field.id + '*/';
+    for (const scriptEl of scripts) {
+      const content = scriptEl.textContent || '';
+      const idx = content.indexOf(marker);
+      if (idx === -1) continue;
+      const afterMarker = idx + marker.length;
+      const quoteChar = content[afterMarker];
+      if (quoteChar !== "'" && quoteChar !== '"' && quoteChar !== '`') break;
+      let i = afterMarker + 1;
+      while (i < content.length) {
+        if (content[i] === '\\') { i += 2; continue; }
+        if (content[i] === quoteChar) break;
+        i++;
+      }
+      if (i >= content.length) break;
+      const endOfString = i + 1;
+      const newEscaped = encodeJsString(field.text, quoteChar);
+      const newString = quoteChar + newEscaped + quoteChar;
+      scriptEl.textContent = content.slice(0, afterMarker) + newString + content.slice(endOfString);
+      break;
     }
   }
   return root.innerHTML;
@@ -646,7 +694,93 @@ function stripCmsEditMarkers(html) {
   const doc = new DOMParser().parseFromString('<div id="cms-root">' + (html || '') + '</div>', 'text/html');
   const root = doc.getElementById('cms-root');
   root.querySelectorAll('[data-cms-edit]').forEach((el) => el.removeAttribute('data-cms-edit'));
+  // Strip script-string markers (/*cmsstr12*/)
+  root.querySelectorAll('script').forEach((script) => {
+    let content = script.textContent || '';
+    content = content.replace(/\/\*cmsstr\d+\*\//g, '');
+    script.textContent = content;
+  });
   return root.innerHTML;
+}
+
+/* ─── Script string utilities ────────────────────────────────── */
+
+function markScriptStrings(scriptContent, startId) {
+  const fields = [];
+  let result = '';
+  let lastEnd = 0;
+  let nextId = startId;
+  const pattern = /(['"`])((?:\\.|(?!\1).)*)\1/g;
+  let match;
+  while ((match = pattern.exec(scriptContent)) !== null) {
+    const quoteChar = match[1];
+    const rawText = match[2];
+    const decoded = decodeJsString(rawText, quoteChar);
+    if (looksLikeContent(decoded)) {
+      const id = 'cmsstr' + nextId++;
+      result += scriptContent.slice(lastEnd, match.index);
+      result += '/*' + id + '*/';
+      result += match[0];
+      lastEnd = match.index + match[0].length;
+      fields.push({
+        id,
+        kind: 'scriptString',
+        quoteChar,
+        text: decoded,
+        original: decoded,
+        label: 'Skript-Text',
+      });
+    }
+  }
+  result += scriptContent.slice(lastEnd);
+  return { content: result, fields, nextId };
+}
+
+function decodeJsString(raw, quoteChar) {
+  let out = '';
+  for (let i = 0; i < raw.length; i++) {
+    const ch = raw[i];
+    if (ch === '\\' && i + 1 < raw.length) {
+      const next = raw[i + 1];
+      if (next === 'n') { out += '\n'; i++; }
+      else if (next === 'r') { out += '\r'; i++; }
+      else if (next === 't') { out += '\t'; i++; }
+      else if (next === '\\') { out += '\\'; i++; }
+      else if (next === quoteChar) { out += quoteChar; i++; }
+      else if (next === 'u' && i + 5 < raw.length) {
+        const hex = raw.slice(i + 2, i + 6);
+        if (/^[0-9a-fA-F]{4}$/.test(hex)) { out += String.fromCharCode(parseInt(hex, 16)); i += 5; }
+        else { out += ch; }
+      } else { out += next; i++; }
+    } else {
+      out += ch;
+    }
+  }
+  return out;
+}
+
+function encodeJsString(text, quoteChar) {
+  let out = text.replace(/\\/g, '\\\\');
+  if (quoteChar === "'") out = out.replace(/'/g, "\\'");
+  else if (quoteChar === '"') out = out.replace(/"/g, '\\"');
+  else if (quoteChar === '`') out = out.replace(/`/g, '\\`');
+  if (quoteChar !== '`') {
+    out = out.replace(/\n/g, '\\n').replace(/\r/g, '\\r').replace(/\t/g, '\\t');
+  }
+  return out;
+}
+
+function looksLikeContent(text) {
+  if (text.length < SCRIPT_MIN_LEN) return false;
+  if (!/\s/.test(text)) return false;
+  if (/^https?:\/\//i.test(text)) return false;
+  if (/^\/[a-z]/i.test(text)) return false;
+  if (/^[A-Z][A-Z0-9_-]+$/.test(text)) return false;
+  if (text.startsWith('${') || text.includes('${')) return false;
+  if (/^[a-z][a-zA-Z]*\s*[(=]/.test(text)) return false;
+  if (/^\s*[<>]/.test(text)) return false;
+  if (/^[a-z-]+:\s*\S/i.test(text) && !text.includes(' ')) return false;
+  return true;
 }
 
 const FIELD_LABELS_DE = {

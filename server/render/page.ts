@@ -60,6 +60,7 @@ export function renderPage(slug: string): string {
       continue;
     }
     bodyParts.push(`<!-- section ${sec.id} (${sec.type}) -->`);
+    bodyParts.push(`<a id="cms-section-${sec.id}" aria-hidden="true" tabindex="-1" style="display:block;height:0;width:0;overflow:hidden;scroll-margin-top:90px;outline:none"></a>`);
     bodyParts.push(type.render(data));
   }
 
