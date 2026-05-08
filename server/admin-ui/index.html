@@ -6,7 +6,7 @@
 <title>HEKO Voice — CMS</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/admin/styles.css">
+<link rel="stylesheet" href="/admin/styles.css?v={{ASSET_VERSION}}">
 </head>
 <body>
 
@@ -117,6 +117,9 @@
                   <div class="meta" @click="openEditSection(s)">
                     <div class="type-badge" x-text="typeLabel(s.type)"></div>
                     <div class="label" x-text="sectionLabel(s)"></div>
+                    <template x-if="sectionTextCount(s) !== null">
+                      <span class="text-count-badge" :class="{empty: sectionTextCount(s)===0}" x-text="sectionTextCount(s) + ' Text' + (sectionTextCount(s)===1?'':'e')"></span>
+                    </template>
                   </div>
                   <div class="row-actions">
                     <button class="icon" @click="toggleVisibility(s)" :title="s.visible?'Ausblenden':'Einblenden'">
@@ -232,35 +235,103 @@
     </div>
   </template>
 
-  <!-- ─── Section Editor Modal ───────────────────────────── -->
+  <!-- ─── Section Editor Modal — Shopify-style split-screen ─── -->
   <div class="modal" x-show="modal==='section-edit'" @keydown.escape.window="closeModal()">
-    <div class="modal-card lg">
+    <div class="modal-card xl split">
       <header class="modal-head">
         <h3>
           <span x-show="!edit.id">Neue Section</span>
           <span x-show="edit.id" x-text="'Section bearbeiten · ' + sectionLabel(edit)"></span>
         </h3>
+        <div class="modal-head-spacer"></div>
+        <span class="muted small" x-show="previewLoading">Vorschau lädt …</span>
+        <button class="btn ghost btn-s" @click="reloadPreview()" title="Vorschau neu laden">🔄 Vorschau</button>
         <button class="icon" @click="closeModal()">✕</button>
       </header>
-      <div class="modal-body">
-        <div class="editor-tabs">
-          <button :class="{active: editTab==='texts'}" @click="switchToTextsTab()" x-show="edit.type==='raw_html'">📝 Texte</button>
-          <button :class="{active: editTab==='form'}" @click="editTab='form'" x-show="edit.type!=='raw_html'">Formular</button>
-          <button :class="{active: editTab==='html'}" @click="editTab='html'" x-show="edit.type==='raw_html'">⚙️ HTML-Code</button>
-          <button :class="{active: editTab==='json'}" @click="editTab='json'" x-show="edit.type!=='raw_html'">JSON</button>
-          <button :class="{active: editTab==='revisions'}" @click="loadRevisions()" x-show="edit.id">Versionen</button>
-        </div>
 
-        <!-- TEXTS TAB (raw_html, no-code mode) -->
-        <div x-show="editTab==='texts'">
-          <label>
-            <span>Bezeichnung dieser Section (interner Name)</span>
-            <input type="text" x-model="edit.data.label" placeholder="z.B. Hero, FAQ, Footer">
-          </label>
-          <details class="advanced-toggle">
-            <summary>Section-Typ ändern (für Profis)</summary>
+      <div class="split-body">
+
+        <!-- LEFT PANE: editor -->
+        <div class="split-form">
+          <div class="editor-tabs">
+            <template x-if="edit.type === 'raw_html'">
+              <button :class="{active: editTab==='texts'}" @click="switchToTextsTab()">📝 Texte</button>
+            </template>
+            <template x-if="edit.type !== 'raw_html'">
+              <button :class="{active: editTab==='form'}" @click="editTab='form'">Formular</button>
+            </template>
+            <template x-if="edit.type === 'raw_html'">
+              <button :class="{active: editTab==='html'}" @click="editTab='html'">⚙️ HTML</button>
+            </template>
+            <template x-if="edit.type !== 'raw_html'">
+              <button :class="{active: editTab==='json'}" @click="editTab='json'">JSON</button>
+            </template>
+            <template x-if="edit.id">
+              <button :class="{active: editTab==='revisions'}" @click="loadRevisions()">Versionen</button>
+            </template>
+          </div>
+
+          <!-- TEXTS TAB (raw_html, no-code mode) -->
+          <div x-show="editTab==='texts' && edit.type==='raw_html'">
             <label>
-              <span>Typ</span>
+              <span>Bezeichnung dieser Section (interner Name)</span>
+              <input type="text" x-model="edit.data.label" placeholder="z.B. Hero, FAQ, Footer">
+            </label>
+            <details class="advanced-toggle">
+              <summary>Section-Typ ändern (für Profis)</summary>
+              <label>
+                <span>Typ</span>
+                <select x-model="edit.type" @change="onTypeChange()">
+                  <template x-for="t in types" :key="t.id">
+                    <option :value="t.id" x-text="t.label"></option>
+                  </template>
+                </select>
+                <small class="muted" x-text="typeDescription(edit.type)"></small>
+              </label>
+            </details>
+            <template x-if="extractedFields.length > 0">
+              <div class="text-fields-info">
+                <strong x-text="extractedFields.length + ' bearbeitbare Texte'"></strong> · Klick rein und ändere was du willst. Layout, Bilder, Icons bleiben unverändert.
+              </div>
+            </template>
+            <template x-if="extractedFields.length === 0">
+              <div class="text-fields-info empty">
+                <strong>Keine bearbeitbaren Texte in dieser Section.</strong>
+                <br>Diese Section enthält wahrscheinlich nur Skripte, Tracking oder Bilder. Wechsel auf den ⚙️ HTML-Tab falls du sie trotzdem anpassen willst — oder lass sie einfach in Ruhe.
+              </div>
+            </template>
+            <div class="text-fields">
+              <template x-for="(field, idx) in extractedFields" :key="field.id">
+                <div class="text-field" :data-kind="field.kind">
+                  <div class="text-field-label">
+                    <span class="kind-badge" x-text="field.label"></span>
+                  </div>
+                  <template x-if="field.kind === 'paragraph' || (field.text && field.text.length > 80)">
+                    <textarea rows="3" :value="field.text" @input="updateExtractedField(idx, 'text', $event.target.value)"></textarea>
+                  </template>
+                  <template x-if="field.kind !== 'paragraph' && (!field.text || field.text.length <= 80)">
+                    <input type="text" :value="field.text" @input="updateExtractedField(idx, 'text', $event.target.value)">
+                  </template>
+                  <template x-if="field.kind === 'link'">
+                    <input type="text" :value="field.href" @input="updateExtractedField(idx, 'href', $event.target.value)" placeholder="URL — z.B. /termin oder https://..." class="url-input">
+                  </template>
+                </div>
+              </template>
+            </div>
+          </div>
+
+          <!-- HTML TAB (raw_html, power-user mode) -->
+          <div x-show="editTab==='html' && edit.type==='raw_html'">
+            <label>
+              <span>HTML-Code dieser Section</span>
+              <textarea x-model="edit.data.html" @blur="extractTexts()" rows="20" spellcheck="false"></textarea>
+              <small class="muted">Vorsicht — falsche Tags können das Layout brechen.</small>
+            </label>
+          </div>
+
+          <!-- FORM TAB (typed sections only) -->
+          <div x-show="editTab==='form' && edit.type!=='raw_html'">
+            <label>Section-Typ
               <select x-model="edit.type" @change="onTypeChange()">
                 <template x-for="t in types" :key="t.id">
                   <option :value="t.id" x-text="t.label"></option>
@@ -268,86 +339,56 @@
               </select>
               <small class="muted" x-text="typeDescription(edit.type)"></small>
             </label>
-          </details>
-          <div class="text-fields-info">
-            Hier siehst du alle Texte aus dieser Section. Klick rein und ändere was du willst — Layout und Bilder bleiben unverändert.
-            <br><strong x-text="extractedFields.length + ' bearbeitbare Texte gefunden'"></strong>
-            <span x-show="extractedFields.length===0" class="muted"> · Diese Section enthält keine direkt editierbaren Texte (z.B. nur Bilder/Code) — verwende den HTML-Code-Tab.</span>
+            <hr>
+            <div id="dynamic-form-host"></div>
           </div>
-          <div class="text-fields">
-            <template x-for="(field, idx) in extractedFields" :key="field.id">
-              <div class="text-field" :data-kind="field.kind">
-                <div class="text-field-label">
-                  <span class="kind-badge" x-text="field.label"></span>
-                </div>
-                <template x-if="field.kind === 'paragraph' || (field.text && field.text.length > 80)">
-                  <textarea rows="3" :value="field.text" @input="updateExtractedField(idx, 'text', $event.target.value)"></textarea>
-                </template>
-                <template x-if="field.kind !== 'paragraph' && (!field.text || field.text.length <= 80)">
-                  <input type="text" :value="field.text" @input="updateExtractedField(idx, 'text', $event.target.value)">
-                </template>
-                <template x-if="field.kind === 'link'">
-                  <input type="text" :value="field.href" @input="updateExtractedField(idx, 'href', $event.target.value)" placeholder="URL — z.B. /termin oder https://..." class="url-input">
-                </template>
-              </div>
-            </template>
+
+          <div x-show="editTab==='json'">
+            <label>Daten als JSON
+              <textarea x-model="edit.dataJson" rows="20" spellcheck="false"></textarea>
+              <small class="muted">Vorsicht: Eingabe muss gültiges JSON sein. Schema-Validierung erfolgt beim Speichern.</small>
+            </label>
           </div>
-        </div>
 
-        <!-- HTML TAB (raw_html, power-user mode) -->
-        <div x-show="editTab==='html'">
-          <label>
-            <span>HTML-Code dieser Section</span>
-            <textarea x-model="edit.data.html" @blur="extractTexts()" rows="20" spellcheck="false"></textarea>
-            <small class="muted">Vorsicht — falsche Tags können das Layout brechen. Nach dem Schließen wird die „Texte"-Ansicht aktualisiert.</small>
-          </label>
-        </div>
-
-        <!-- FORM TAB (typed sections only) -->
-        <div x-show="editTab==='form'">
-          <label>Section-Typ
-            <select x-model="edit.type" @change="onTypeChange()">
-              <template x-for="t in types" :key="t.id">
-                <option :value="t.id" x-text="t.label"></option>
+          <div x-show="editTab==='revisions'">
+            <p class="muted" x-show="revisions.length===0">Noch keine Versionen.</p>
+            <ul class="revisions">
+              <template x-for="r in revisions" :key="r.id">
+                <li>
+                  <div>
+                    <strong x-text="formatDate(r.changed_at)"></strong>
+                    <small class="muted" x-text="r.comment||''"></small>
+                  </div>
+                  <button class="btn ghost" @click="restoreRevision(r)">Wiederherstellen</button>
+                </li>
               </template>
-            </select>
-            <small class="muted" x-text="typeDescription(edit.type)"></small>
-          </label>
-          <hr>
-          <div x-html="renderEditFormHtml()"></div>
-          <div id="dynamic-form-host"></div>
+            </ul>
+          </div>
         </div>
 
-        <div x-show="editTab==='json'">
-          <label>Daten als JSON
-            <textarea x-model="edit.dataJson" rows="20" spellcheck="false"></textarea>
-            <small class="muted">Vorsicht: Eingabe muss gültiges JSON sein. Schema-Validierung erfolgt beim Speichern.</small>
-          </label>
-        </div>
-
-        <div x-show="editTab==='revisions'">
-          <p class="muted" x-show="revisions.length===0">Noch keine Versionen.</p>
-          <ul class="revisions">
-            <template x-for="r in revisions" :key="r.id">
-              <li>
-                <div>
-                  <strong x-text="formatDate(r.changed_at)"></strong>
-                  <small class="muted" x-text="r.comment||''"></small>
-                </div>
-                <button class="btn ghost" @click="restoreRevision(r)">Wiederherstellen</button>
-              </li>
-            </template>
-          </ul>
+        <!-- RIGHT PANE: live preview -->
+        <div class="split-preview">
+          <div class="preview-frame-wrap">
+            <iframe :src="previewUrl" id="preview-iframe" @load="previewLoading=false" sandbox="allow-same-origin allow-scripts allow-forms"></iframe>
+            <div class="preview-overlay" x-show="previewLoading">
+              <div class="spinner"></div>
+            </div>
+          </div>
         </div>
       </div>
+
       <footer class="modal-foot">
         <label class="inline">
           <input type="checkbox" x-model="edit.visible">
           Sichtbar
         </label>
         <div class="grow"></div>
-        <button class="btn ghost" @click="closeModal()">Abbrechen</button>
-        <button class="btn primary" @click="saveSection()" :disabled="loading">Speichern</button>
+        <a :href="currentPageUrl()" target="_blank" class="btn ghost btn-s">↗ In neuem Tab</a>
+        <button class="btn ghost" @click="closeModal()">Schließen</button>
+        <button class="btn primary" @click="saveSection()" :disabled="loading">
+          <span x-show="!loading">💾 Speichern</span>
+          <span x-show="loading">…</span>
+        </button>
       </footer>
     </div>
   </div>
@@ -418,8 +459,8 @@
 
 </div>
 
-<script src="/admin/app.js"></script>
-<script src="/admin/alpine.min.js" defer></script>
+<script src="/admin/app.js?v={{ASSET_VERSION}}"></script>
+<script src="/admin/alpine.min.js?v={{ASSET_VERSION}}" defer></script>
 <script>
   // Fallback if Alpine fails to initialize within 4 seconds
   setTimeout(function () {

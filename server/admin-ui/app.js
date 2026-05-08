@@ -75,6 +75,17 @@ window.cms = function () {
     toasts: [],
     toastSeq: 1,
     dragIdx: null,
+    previewVersion: 0,
+    previewLoading: false,
+    get previewUrl() {
+      if (!this.edit) return '';
+      const sep = this.currentPageUrl().includes('?') ? '&' : '?';
+      return this.currentPageUrl() + sep + 'cmsv=' + this.previewVersion + (this.edit.id ? '#cms-section-' + this.edit.id : '');
+    },
+    reloadPreview() {
+      this.previewLoading = true;
+      this.previewVersion++;
+    },
 
     async init() {
       try {
@@ -155,6 +166,13 @@ window.cms = function () {
       const d = s.data || {};
       return d.label || d.headline || d.headline_pre || s.type || `Section ${s.id}`;
     },
+    sectionTextCount(s) {
+      if (s.type !== 'raw_html') return null; // typed sections always editable
+      try {
+        const html = s.data?.html || '';
+        return parseEditableFields(html).fields.length;
+      } catch { return 0; }
+    },
     settingsLabel(key) { return SETTINGS_LABELS[key] || key; },
 
     formatDate(ts) { if (!ts) return '—'; return new Date(ts).toLocaleString('de-DE',{dateStyle:'medium',timeStyle:'short'}); },
@@ -171,6 +189,8 @@ window.cms = function () {
       this.edit = { id: null, type: 'raw_html', visible: true, data: null, dataJson: '' };
       this.onTypeChange();
       this.modal = 'section-edit';
+      this.previewLoading = true;
+      this.previewVersion++;
       this.$nextTick(() => this.renderEditForm());
     },
     openEditSection(s) {
@@ -182,6 +202,8 @@ window.cms = function () {
       this.editTab = s.type === 'raw_html' ? 'texts' : 'form';
       this.revisions = [];
       this.modal = 'section-edit';
+      this.previewLoading = true;
+      this.previewVersion++;
       if (s.type === 'raw_html') this.extractTexts();
       this.$nextTick(() => this.renderEditForm());
     },
@@ -342,14 +364,16 @@ window.cms = function () {
             body: JSON.stringify({ type: this.edit.type, data, visible: this.edit.visible }),
           });
         } else {
-          await api('/sections', {
+          const r = await api('/sections', {
             method: 'POST',
             body: JSON.stringify({ page: this.currentPage(), type: this.edit.type, data }),
           });
+          this.edit.id = r.id;
         }
         this.toast('Gespeichert.', 'success');
-        this.closeModal();
         await this.loadSections();
+        this.previewLoading = true;
+        this.previewVersion++;
       } catch (e) {
         this.toast('Fehler: ' + humanizeApiError(e), 'error');
       } finally { this.loading = false; }
