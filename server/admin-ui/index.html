@@ -10,6 +10,20 @@
 </head>
 <body>
 
+<noscript>
+  <div style="padding:40px;font-family:Inter,system-ui,sans-serif;text-align:center;">
+    <h1 style="color:#dc2626;">JavaScript ist deaktiviert</h1>
+    <p>Das CMS benötigt JavaScript. Bitte aktivieren und Seite neu laden.</p>
+  </div>
+</noscript>
+
+<div id="js-error" style="display:none;padding:40px;font-family:Inter,system-ui,sans-serif;max-width:520px;margin:80px auto;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.06);text-align:center;">
+  <h1 style="color:#dc2626;font-size:18px;margin-bottom:12px;">CMS lädt nicht</h1>
+  <p style="color:#475569;font-size:14px;line-height:1.6;">
+    Alpine.js konnte nicht initialisiert werden. Bitte Browser-Konsole (F12) prüfen — meist sind es eine Browser-Erweiterung (Adblocker), eine Firewall oder eine zu strenge Cloudflare-Cache-Regel.
+  </p>
+</div>
+
 <div id="app" x-data="cms()" x-init="init()" x-cloak>
 
   <!-- ─── Login screen ───────────────────────────────────── -->
@@ -327,7 +341,22 @@
 
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js" defer></script>
-<script src="/admin/app.js" defer></script>
+<script src="/admin/app.js"></script>
+<script src="/admin/alpine.min.js" defer></script>
+<script>
+  // Fallback if Alpine fails to initialize within 4 seconds
+  setTimeout(function () {
+    var app = document.getElementById('app');
+    if (app && !app.hasAttribute('x-data-initialized') && !window.Alpine) {
+      var err = document.getElementById('js-error');
+      if (err) err.style.display = 'block';
+      if (app) app.style.display = 'none';
+      console.error('[CMS] Alpine.js did not initialize. Check the browser console for errors and verify /admin/alpine.min.js loaded.');
+    }
+  }, 4000);
+  document.addEventListener('alpine:init', function () {
+    document.documentElement.setAttribute('data-alpine-ready', '1');
+  });
+</script>
 </body>
 </html>
