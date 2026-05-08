@@ -36,14 +36,18 @@
         </div>
         <p class="muted">Bitte anmelden, um Inhalte zu bearbeiten.</p>
         <form @submit.prevent="login()" class="form">
-          <label>E-Mail
+          <label><span>E-Mail</span>
             <input type="email" x-model="loginForm.email" autocomplete="email" required>
           </label>
-          <label>Passwort
+          <label><span>Passwort</span>
             <input type="password" x-model="loginForm.password" autocomplete="current-password" required>
           </label>
-          <div x-show="loginError" class="alert error" x-text="loginError"></div>
-          <button class="btn primary" :disabled="loading">
+          <div x-show="loginError" class="alert error">
+            <span class="ico" x-html="iconHtml('error')"></span>
+            <span x-text="loginError"></span>
+          </div>
+          <button class="btn primary lg full" :disabled="loading">
+            <span x-show="!loading" class="ico" x-html="iconHtml('lock')"></span>
             <span x-show="!loading">Anmelden</span>
             <span x-show="loading">…</span>
           </button>
@@ -61,12 +65,34 @@
           <span>CMS</span>
         </div>
         <nav class="nav">
-          <button :class="{active: tab==='page-index'}" @click="setTab('page-index')">📄 Startseite</button>
-          <button :class="{active: tab==='page-termin'}" @click="setTab('page-termin')">📅 Termin-Seite</button>
-          <button :class="{active: tab==='media'}" @click="setTab('media')">🖼️ Mediathek</button>
-          <button :class="{active: tab==='settings'}" @click="setTab('settings')" x-show="user.role==='admin'">⚙️ Einstellungen</button>
-          <button :class="{active: tab==='users'}" @click="setTab('users')" x-show="user.role==='admin'">👥 Benutzer</button>
-          <button :class="{active: tab==='backup'}" @click="setTab('backup')" x-show="user.role==='admin'">💾 Backup</button>
+          <div class="nav-group-label">Inhalte</div>
+          <button :class="{active: tab==='page-index'}" @click="setTab('page-index')">
+            <span class="ico" x-html="iconHtml('page')"></span>
+            <span>Startseite</span>
+          </button>
+          <button :class="{active: tab==='page-termin'}" @click="setTab('page-termin')">
+            <span class="ico" x-html="iconHtml('page')"></span>
+            <span>Termin-Seite</span>
+          </button>
+          <button :class="{active: tab==='media'}" @click="setTab('media')">
+            <span class="ico" x-html="iconHtml('photo')"></span>
+            <span>Mediathek</span>
+          </button>
+          <template x-if="user.role==='admin'">
+            <div class="nav-group-label">Verwaltung</div>
+          </template>
+          <button :class="{active: tab==='settings'}" @click="setTab('settings')" x-show="user.role==='admin'">
+            <span class="ico" x-html="iconHtml('cog')"></span>
+            <span>Einstellungen</span>
+          </button>
+          <button :class="{active: tab==='users'}" @click="setTab('users')" x-show="user.role==='admin'">
+            <span class="ico" x-html="iconHtml('users')"></span>
+            <span>Benutzer</span>
+          </button>
+          <button :class="{active: tab==='backup'}" @click="setTab('backup')" x-show="user.role==='admin'">
+            <span class="ico" x-html="iconHtml('archive')"></span>
+            <span>Backup</span>
+          </button>
         </nav>
         <div class="sidebar-foot">
           <div class="user-pill">
@@ -76,7 +102,10 @@
               <div class="user-role" x-text="user.role"></div>
             </div>
           </div>
-          <button class="btn ghost full" @click="logout()">Abmelden</button>
+          <button class="btn ghost full" @click="logout()">
+            <span class="ico" x-html="iconHtml('logout')"></span>
+            <span>Abmelden</span>
+          </button>
         </div>
       </aside>
 
@@ -85,7 +114,10 @@
         <!-- toast -->
         <div class="toasts">
           <template x-for="t in toasts" :key="t.id">
-            <div class="toast" :class="t.kind" x-text="t.msg"></div>
+            <div class="toast" :class="t.kind">
+              <span class="ico" x-html="iconHtml(t.kind==='success'?'check':t.kind==='error'?'error':'sparkles')"></span>
+              <span x-text="t.msg"></span>
+            </div>
           </template>
         </div>
 
@@ -98,8 +130,14 @@
                 <p class="muted">Sections per Drag & Drop sortieren · klicken zum Bearbeiten · sichtbar/unsichtbar schalten.</p>
               </div>
               <div class="actions">
-                <a :href="currentPageUrl()" target="_blank" class="btn ghost">↗ Vorschau</a>
-                <button class="btn primary" @click="openAddSection()" x-show="user.role==='admin'">+ Section hinzufügen</button>
+                <a :href="currentPageUrl()" target="_blank" class="btn ghost">
+                  <span class="ico" x-html="iconHtml('external')"></span>
+                  <span>Vorschau</span>
+                </a>
+                <button class="btn primary" @click="openAddSection()" x-show="user.role==='admin'">
+                  <span class="ico" x-html="iconHtml('plus')"></span>
+                  <span>Section hinzufügen</span>
+                </button>
               </div>
             </header>
 
@@ -113,7 +151,9 @@
                      @dragover.prevent="onDragOver($event, idx)"
                      @drop.prevent="onDrop($event, idx)"
                      @dragend="onDragEnd()">
-                  <div class="drag" title="Ziehen zum Sortieren">⋮⋮</div>
+                  <div class="drag" title="Ziehen zum Sortieren">
+                    <span class="ico" x-html="iconHtml('drag')"></span>
+                  </div>
                   <div class="meta" @click="openEditSection(s)">
                     <div class="type-badge" x-text="typeLabel(s.type)"></div>
                     <div class="label" x-text="sectionLabel(s)"></div>
@@ -123,14 +163,22 @@
                   </div>
                   <div class="row-actions">
                     <button class="icon" @click="toggleVisibility(s)" :title="s.visible?'Ausblenden':'Einblenden'">
-                      <span x-text="s.visible?'👁️':'🚫'"></span>
+                      <span class="ico" x-html="iconHtml(s.visible?'eye':'eyeOff')"></span>
                     </button>
-                    <button class="icon" @click="openEditSection(s)" title="Bearbeiten">✏️</button>
-                    <button class="icon danger" @click="confirmDelete(s)" title="Löschen" x-show="user.role==='admin'">🗑</button>
+                    <button class="icon" @click="openEditSection(s)" title="Bearbeiten">
+                      <span class="ico" x-html="iconHtml('pencil')"></span>
+                    </button>
+                    <button class="icon danger" @click="confirmDelete(s)" title="Löschen" x-show="user.role==='admin'">
+                      <span class="ico" x-html="iconHtml('trash')"></span>
+                    </button>
                   </div>
                 </div>
               </template>
-              <div x-show="sections.length===0" class="empty">Noch keine Sections — füge welche hinzu.</div>
+              <div x-show="sections.length===0" class="empty">
+                <div class="ico" x-html="iconHtml('page')"></div>
+                <strong>Noch keine Sections</strong>
+                Füge welche hinzu, um diese Seite zu befüllen.
+              </div>
             </div>
           </div>
         </template>
@@ -142,7 +190,8 @@
               <div><h2>Mediathek</h2><p class="muted">Bilder hochladen und verwalten.</p></div>
               <div class="actions">
                 <label class="btn primary upload-label">
-                  + Bild hochladen
+                  <span class="ico" x-html="iconHtml('upload')"></span>
+                  <span>Bild hochladen</span>
                   <input type="file" accept="image/*" @change="uploadFile($event)" hidden>
                 </label>
               </div>
@@ -161,7 +210,11 @@
                   </div>
                 </div>
               </template>
-              <div x-show="media.length===0" class="empty">Noch keine Bilder.</div>
+              <div x-show="media.length===0" class="empty" style="grid-column:1/-1">
+                <div class="ico" x-html="iconHtml('photo')"></div>
+                <strong>Noch keine Bilder</strong>
+                Lade dein erstes Bild hoch.
+              </div>
             </div>
           </div>
         </template>
@@ -172,7 +225,10 @@
             <header class="page-head">
               <div><h2>Einstellungen</h2><p class="muted">Globale Werte (Tracking, Kontakt, Meta-Tags). Änderungen wirken auf beide Seiten.</p></div>
               <div class="actions">
-                <button class="btn primary" @click="saveSettings()" :disabled="loading">Speichern</button>
+                <button class="btn primary" @click="saveSettings()" :disabled="loading">
+                  <span class="ico" x-html="iconHtml('check')"></span>
+                  <span>Speichern</span>
+                </button>
               </div>
             </header>
             <div class="settings-grid">
@@ -196,7 +252,12 @@
           <div>
             <header class="page-head">
               <div><h2>Benutzer</h2><p class="muted">Wer darf das CMS bedienen.</p></div>
-              <div class="actions"><button class="btn primary" @click="openAddUser()">+ Benutzer anlegen</button></div>
+              <div class="actions">
+                <button class="btn primary" @click="openAddUser()">
+                  <span class="ico" x-html="iconHtml('plus')"></span>
+                  <span>Benutzer anlegen</span>
+                </button>
+              </div>
             </header>
             <table class="data">
               <thead><tr><th>Name</th><th>E-Mail</th><th>Rolle</th><th>Letzter Login</th><th></th></tr></thead>
@@ -208,8 +269,12 @@
                     <td><span class="role-tag" :class="u.role" x-text="u.role"></span></td>
                     <td x-text="formatDate(u.last_login_at)"></td>
                     <td class="row-actions">
-                      <button class="icon" @click="openEditUser(u)">✏️</button>
-                      <button class="icon danger" @click="deleteUser(u)" x-show="u.id !== user.id">🗑</button>
+                      <button class="icon" @click="openEditUser(u)" title="Bearbeiten">
+                        <span class="ico" x-html="iconHtml('pencil')"></span>
+                      </button>
+                      <button class="icon danger" @click="deleteUser(u)" x-show="u.id !== user.id" title="Löschen">
+                        <span class="ico" x-html="iconHtml('trash')"></span>
+                      </button>
                     </td>
                   </tr>
                 </template>
@@ -226,7 +291,10 @@
             </header>
             <div class="card">
               <p>Lädt eine JSON-Datei mit allen Sections, Settings, Benutzern (ohne Passwörter) und Mediathek-Metadaten.</p>
-              <a class="btn primary" href="/api/backup/export" download>⬇ Backup herunterladen</a>
+              <a class="btn primary" href="/api/backup/export" download>
+                <span class="ico" x-html="iconHtml('download')"></span>
+                <span>Backup herunterladen</span>
+              </a>
             </div>
           </div>
         </template>
@@ -245,8 +313,13 @@
         </h3>
         <div class="modal-head-spacer"></div>
         <span class="muted small" x-show="previewLoading">Vorschau lädt …</span>
-        <button class="btn ghost btn-s" @click="reloadPreview()" title="Vorschau neu laden">🔄 Vorschau</button>
-        <button class="icon" @click="closeModal()">✕</button>
+        <button class="btn ghost sm" @click="reloadPreview()" title="Vorschau neu laden">
+          <span class="ico" x-html="iconHtml('refresh')"></span>
+          <span>Vorschau</span>
+        </button>
+        <button class="icon" @click="closeModal()" title="Schließen">
+          <span class="ico" x-html="iconHtml('x')"></span>
+        </button>
       </header>
 
       <div class="split-body">
@@ -255,19 +328,34 @@
         <div class="split-form">
           <div class="editor-tabs">
             <template x-if="edit.type === 'raw_html'">
-              <button :class="{active: editTab==='texts'}" @click="switchToTextsTab()">📝 Texte</button>
+              <button :class="{active: editTab==='texts'}" @click="switchToTextsTab()">
+                <span class="ico" x-html="iconHtml('text')"></span>
+                <span>Texte</span>
+              </button>
             </template>
             <template x-if="edit.type !== 'raw_html'">
-              <button :class="{active: editTab==='form'}" @click="editTab='form'">Formular</button>
+              <button :class="{active: editTab==='form'}" @click="editTab='form'">
+                <span class="ico" x-html="iconHtml('text')"></span>
+                <span>Formular</span>
+              </button>
             </template>
             <template x-if="edit.type === 'raw_html'">
-              <button :class="{active: editTab==='html'}" @click="editTab='html'">⚙️ HTML</button>
+              <button :class="{active: editTab==='html'}" @click="editTab='html'">
+                <span class="ico" x-html="iconHtml('code')"></span>
+                <span>HTML</span>
+              </button>
             </template>
             <template x-if="edit.type !== 'raw_html'">
-              <button :class="{active: editTab==='json'}" @click="editTab='json'">JSON</button>
+              <button :class="{active: editTab==='json'}" @click="editTab='json'">
+                <span class="ico" x-html="iconHtml('code')"></span>
+                <span>JSON</span>
+              </button>
             </template>
             <template x-if="edit.id">
-              <button :class="{active: editTab==='revisions'}" @click="loadRevisions()">Versionen</button>
+              <button :class="{active: editTab==='revisions'}" @click="loadRevisions()">
+                <span class="ico" x-html="iconHtml('rotate')"></span>
+                <span>Versionen</span>
+              </button>
             </template>
           </div>
 
@@ -291,13 +379,17 @@
             </details>
             <template x-if="extractedFields.length > 0">
               <div class="text-fields-info">
-                <strong x-text="extractedFields.length + ' bearbeitbare Texte'"></strong> · Klick rein und ändere was du willst. Layout, Bilder, Icons bleiben unverändert.
+                <span class="ico" x-html="iconHtml('sparkles')"></span>
+                <div><strong x-text="extractedFields.length + ' bearbeitbare Texte'"></strong> · Klick rein und ändere was du willst. Layout, Bilder, Icons bleiben unverändert.</div>
               </div>
             </template>
             <template x-if="extractedFields.length === 0">
               <div class="text-fields-info empty">
-                <strong>Keine bearbeitbaren Texte in dieser Section.</strong>
-                <br>Diese Section enthält wahrscheinlich nur Skripte, Tracking oder Bilder. Wechsel auf den ⚙️ HTML-Tab falls du sie trotzdem anpassen willst — oder lass sie einfach in Ruhe.
+                <span class="ico" x-html="iconHtml('warning')"></span>
+                <div>
+                  <strong>Keine bearbeitbaren Texte in dieser Section.</strong>
+                  <br>Diese Section enthält wahrscheinlich nur Skripte, Tracking oder Bilder. Wechsel auf den HTML-Tab falls du sie trotzdem anpassen willst — oder lass sie einfach in Ruhe.
+                </div>
               </div>
             </template>
             <div class="text-fields">
@@ -386,10 +478,14 @@
           Sichtbar
         </label>
         <div class="grow"></div>
-        <a :href="currentPageUrl()" target="_blank" class="btn ghost btn-s">↗ In neuem Tab</a>
+        <a :href="currentPageUrl()" target="_blank" class="btn ghost sm">
+          <span class="ico" x-html="iconHtml('external')"></span>
+          <span>In neuem Tab</span>
+        </a>
         <button class="btn ghost" @click="closeModal()">Schließen</button>
         <button class="btn primary" @click="saveSection()" :disabled="loading">
-          <span x-show="!loading">💾 Speichern</span>
+          <span x-show="!loading" class="ico" x-html="iconHtml('check')"></span>
+          <span x-show="!loading">Speichern</span>
           <span x-show="loading">…</span>
         </button>
       </footer>
@@ -401,7 +497,10 @@
     <div class="modal-card">
       <header class="modal-head">
         <h3 x-text="userEdit.id ? 'Benutzer bearbeiten' : 'Neuen Benutzer anlegen'"></h3>
-        <button class="icon" @click="closeModal()">✕</button>
+        <div class="modal-head-spacer"></div>
+        <button class="icon" @click="closeModal()" title="Schließen">
+          <span class="ico" x-html="iconHtml('x')"></span>
+        </button>
       </header>
       <div class="modal-body">
         <label>
@@ -424,9 +523,12 @@
           <div class="pw-row">
             <input :type="userEdit.passwordVisible ? 'text' : 'password'" x-model="userEdit.password" autocomplete="new-password" :placeholder="userEdit.id ? 'leer lassen wenn unverändert' : 'Min. 10 Zeichen'">
             <button type="button" class="btn ghost btn-pw" @click="userEdit.passwordVisible = !userEdit.passwordVisible" :title="userEdit.passwordVisible ? 'Verbergen' : 'Anzeigen'">
-              <span x-text="userEdit.passwordVisible ? '🙈' : '👁'"></span>
+              <span class="ico" x-html="iconHtml(userEdit.passwordVisible ? 'eyeOff' : 'eye')"></span>
             </button>
-            <button type="button" class="btn ghost btn-pw" @click="generatePassword()" title="Sicheres Passwort generieren">🎲 Generieren</button>
+            <button type="button" class="btn ghost btn-pw" @click="generatePassword()" title="Sicheres Passwort generieren">
+              <span class="ico" x-html="iconHtml('sparkles')"></span>
+              <span>Generieren</span>
+            </button>
           </div>
           <div x-show="userEdit.password" class="pw-meter">
             <div class="pw-bar"><div class="pw-fill" :style="`width:${pwStrength(userEdit.password).pct}%;background:${pwStrength(userEdit.password).color}`"></div></div>
@@ -434,14 +536,25 @@
           </div>
           <small class="muted" x-show="!userEdit.id">Mindestens 10 Zeichen. Sende das Passwort danach sicher an die Person (z.B. per Signal oder persönlich) — nicht per Klartext-E-Mail.</small>
         </label>
-        <div x-show="userEdit.justGenerated" class="alert success" style="display:flex;align-items:center;justify-content:space-between;gap:10px">
-          <div><strong>✓ Passwort generiert.</strong> Vor dem Speichern: einmal kopieren und sicher weitergeben.</div>
-          <button type="button" class="btn primary" @click="copyPassword()">📋 Kopieren</button>
+        <div x-show="userEdit.justGenerated" class="alert success" style="justify-content:space-between">
+          <div style="display:flex;align-items:flex-start;gap:10px">
+            <span class="ico" x-html="iconHtml('check')"></span>
+            <div><strong>Passwort generiert.</strong> Vor dem Speichern: einmal kopieren und sicher weitergeben.</div>
+          </div>
+          <button type="button" class="btn primary sm" @click="copyPassword()">
+            <span class="ico" x-html="iconHtml('clipboard')"></span>
+            <span>Kopieren</span>
+          </button>
         </div>
       </div>
       <footer class="modal-foot">
+        <div class="grow"></div>
         <button class="btn ghost" @click="closeModal()">Abbrechen</button>
-        <button class="btn primary" @click="saveUser()" :disabled="loading">Speichern</button>
+        <button class="btn primary" @click="saveUser()" :disabled="loading">
+          <span x-show="!loading" class="ico" x-html="iconHtml('check')"></span>
+          <span x-show="!loading">Speichern</span>
+          <span x-show="loading">…</span>
+        </button>
       </footer>
     </div>
   </div>
@@ -449,13 +562,23 @@
   <!-- ─── Confirm Modal ──────────────────────────────────── -->
   <div class="modal" x-show="modal==='confirm'" @keydown.escape.window="closeModal()">
     <div class="modal-card sm">
-      <header class="modal-head"><h3 x-text="confirmData.title || 'Sicher?'"></h3></header>
+      <header class="modal-head">
+        <h3 x-text="confirmData.title || 'Sicher?'"></h3>
+        <div class="modal-head-spacer"></div>
+        <button class="icon" @click="closeModal()" title="Schließen">
+          <span class="ico" x-html="iconHtml('x')"></span>
+        </button>
+      </header>
       <div class="modal-body">
-        <p x-text="confirmData.message"></p>
+        <p x-text="confirmData.message" style="color:var(--text-2);line-height:1.55"></p>
       </div>
       <footer class="modal-foot">
+        <div class="grow"></div>
         <button class="btn ghost" @click="closeModal()">Abbrechen</button>
-        <button class="btn danger" @click="confirmData.action(); closeModal()">Bestätigen</button>
+        <button class="btn danger" @click="confirmData.action(); closeModal()">
+          <span class="ico" x-html="iconHtml('trash')"></span>
+          <span>Bestätigen</span>
+        </button>
       </footer>
     </div>
   </div>
