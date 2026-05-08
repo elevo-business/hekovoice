@@ -5,6 +5,7 @@ import { env, isProd } from './config.js';
 // Importing the db module also runs migrations (eager init).
 import './db/index.js';
 import { purgeExpiredSessions } from './auth/sessions.js';
+import { seedInitialContent } from './lib/seed-content.js';
 import { authRoutes } from './routes/auth.js';
 import { healthRoutes } from './routes/health.js';
 import { publicRoutes } from './routes/public.js';
@@ -18,6 +19,14 @@ import { adminRoutes } from './routes/admin.js';
 
 purgeExpiredSessions();
 setInterval(purgeExpiredSessions, 60 * 60 * 1000).unref();
+
+// Auto-seed sections from bundled index.html / termin.html on first boot.
+// No-op once any page has sections — admin can edit freely afterwards.
+try {
+  seedInitialContent();
+} catch (err) {
+  console.error('[seed-content] failed:', err);
+}
 
 const app = new Hono();
 
