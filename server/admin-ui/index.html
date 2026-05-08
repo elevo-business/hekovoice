@@ -305,18 +305,40 @@
         <button class="icon" @click="closeModal()">✕</button>
       </header>
       <div class="modal-body">
-        <label>Name<input type="text" x-model="userEdit.name"></label>
-        <label x-show="!userEdit.id">E-Mail<input type="email" x-model="userEdit.email"></label>
-        <label>Rolle
+        <label>
+          <span>Name</span>
+          <input type="text" x-model="userEdit.name" placeholder="Vor- und Nachname">
+        </label>
+        <label x-show="!userEdit.id">
+          <span>E-Mail</span>
+          <input type="email" x-model="userEdit.email" placeholder="name@firma.de" autocomplete="off">
+        </label>
+        <label>
+          <span>Rolle</span>
           <select x-model="userEdit.role">
-            <option value="editor">Editor (nur Inhalte)</option>
-            <option value="admin">Admin (alles)</option>
+            <option value="editor">Editor — kann Inhalte und Bilder bearbeiten</option>
+            <option value="admin">Admin — darf alles (Sections löschen, Benutzer, Settings)</option>
           </select>
         </label>
-        <label x-text="userEdit.id ? 'Neues Passwort (leer = nicht ändern)' : 'Passwort'">
-          <input type="password" x-model="userEdit.password" autocomplete="new-password">
-          <small class="muted">Min. 10 Zeichen.</small>
+        <label>
+          <span x-text="userEdit.id ? 'Neues Passwort (leer = nicht ändern)' : 'Passwort'"></span>
+          <div class="pw-row">
+            <input :type="userEdit.passwordVisible ? 'text' : 'password'" x-model="userEdit.password" autocomplete="new-password" :placeholder="userEdit.id ? 'leer lassen wenn unverändert' : 'Min. 10 Zeichen'">
+            <button type="button" class="btn ghost btn-pw" @click="userEdit.passwordVisible = !userEdit.passwordVisible" :title="userEdit.passwordVisible ? 'Verbergen' : 'Anzeigen'">
+              <span x-text="userEdit.passwordVisible ? '🙈' : '👁'"></span>
+            </button>
+            <button type="button" class="btn ghost btn-pw" @click="generatePassword()" title="Sicheres Passwort generieren">🎲 Generieren</button>
+          </div>
+          <div x-show="userEdit.password" class="pw-meter">
+            <div class="pw-bar"><div class="pw-fill" :style="`width:${pwStrength(userEdit.password).pct}%;background:${pwStrength(userEdit.password).color}`"></div></div>
+            <small class="muted" x-text="pwStrength(userEdit.password).label"></small>
+          </div>
+          <small class="muted" x-show="!userEdit.id">Mindestens 10 Zeichen. Sende das Passwort danach sicher an die Person (z.B. per Signal oder persönlich) — nicht per Klartext-E-Mail.</small>
         </label>
+        <div x-show="userEdit.justGenerated" class="alert success" style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+          <div><strong>✓ Passwort generiert.</strong> Vor dem Speichern: einmal kopieren und sicher weitergeben.</div>
+          <button type="button" class="btn primary" @click="copyPassword()">📋 Kopieren</button>
+        </div>
       </div>
       <footer class="modal-foot">
         <button class="btn ghost" @click="closeModal()">Abbrechen</button>

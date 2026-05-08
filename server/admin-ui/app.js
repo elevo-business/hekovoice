@@ -315,7 +315,7 @@ window.cms = function () {
         this.closeModal();
         await this.loadSections();
       } catch (e) {
-        this.toast('Fehler: ' + e.message, 'error');
+        this.toast('Fehler: ' + humanizeApiError(e), 'error');
       } finally { this.loading = false; }
     },
 
@@ -330,14 +330,14 @@ window.cms = function () {
 
     async deleteSection(s) {
       try { await api('/sections/' + s.id, { method: 'DELETE' }); this.toast('Gelöscht.', 'success'); await this.loadSections(); }
-      catch (e) { this.toast('Fehler: ' + e.message, 'error'); }
+      catch (e) { this.toast('Fehler: ' + humanizeApiError(e), 'error'); }
     },
 
     async toggleVisibility(s) {
       try {
         await api('/sections/' + s.id, { method: 'PATCH', body: JSON.stringify({ visible: !s.visible }) });
         s.visible = !s.visible;
-      } catch (e) { this.toast('Fehler: ' + e.message, 'error'); }
+      } catch (e) { this.toast('Fehler: ' + humanizeApiError(e), 'error'); }
     },
 
     async loadRevisions() {
@@ -354,7 +354,7 @@ window.cms = function () {
         await this.loadSections();
         const updated = this.sections.find((s) => s.id === this.edit.id);
         if (updated) this.openEditSection(updated);
-      } catch (e) { this.toast('Fehler: ' + e.message, 'error'); }
+      } catch (e) { this.toast('Fehler: ' + humanizeApiError(e), 'error'); }
     },
 
     /* ─── Drag & drop reorder ─────────────────────────────── */
@@ -370,7 +370,7 @@ window.cms = function () {
     async commitReorder() {
       const order = this.sections.map((s) => s.id);
       try { await api('/sections/reorder', { method: 'PUT', body: JSON.stringify({ page: this.currentPage(), order }) }); }
-      catch (e) { this.toast('Reorder fehlgeschlagen: ' + e.message, 'error'); await this.loadSections(); }
+      catch (e) { this.toast('Reorder fehlgeschlagen: ' + humanizeApiError(e), 'error'); await this.loadSections(); }
     },
 
     /* ─── Media ───────────────────────────────────────────── */
@@ -379,13 +379,13 @@ window.cms = function () {
       const fd = new FormData(); fd.append('file', file);
       this.loading = true;
       try { await apiUpload('/media/upload', fd); this.toast('Hochgeladen.', 'success'); await this.loadMedia(); }
-      catch (err) { this.toast('Upload fehlgeschlagen: ' + err.message, 'error'); }
+      catch (err) { this.toast('Upload fehlgeschlagen: ' + humanizeApiError(err), 'error'); }
       finally { this.loading = false; e.target.value = ''; }
     },
     async updateAlt(m, alt) {
       if (alt === (m.alt || '')) return;
       try { await api('/media/' + m.id, { method: 'PATCH', body: JSON.stringify({ alt }) }); m.alt = alt; }
-      catch (e) { this.toast('Fehler: ' + e.message, 'error'); }
+      catch (e) { this.toast('Fehler: ' + humanizeApiError(e), 'error'); }
     },
     async deleteMedia(m) {
       this.confirmData = {
@@ -393,7 +393,7 @@ window.cms = function () {
         message: `„${m.filename}" wird gelöscht. Dies kann Sections beeinflussen, in denen das Bild verwendet wird.`,
         action: async () => {
           try { await api('/media/' + m.id, { method: 'DELETE' }); this.toast('Gelöscht.', 'success'); await this.loadMedia(); }
-          catch (e) { this.toast('Fehler: ' + e.message, 'error'); }
+          catch (e) { this.toast('Fehler: ' + humanizeApiError(e), 'error'); }
         },
       };
       this.modal = 'confirm';
@@ -411,34 +411,94 @@ window.cms = function () {
         for (const k of Object.keys(this.settings)) payload[k] = this.settings[k];
         await api('/settings', { method: 'PATCH', body: JSON.stringify(payload) });
         this.toast('Einstellungen gespeichert.', 'success');
-      } catch (e) { this.toast('Fehler: ' + e.message, 'error'); }
+      } catch (e) { this.toast('Fehler: ' + humanizeApiError(e), 'error'); }
       finally { this.loading = false; }
     },
 
     /* ─── Users ───────────────────────────────────────────── */
     openAddUser() {
-      this.userEdit = { id: null, name: '', email: '', role: 'editor', password: '' };
+      this.userEdit = { id: null, name: '', email: '', role: 'editor', password: '', passwordVisible: false, justGenerated: false };
       this.modal = 'user-edit';
     },
     openEditUser(u) {
-      this.userEdit = { id: u.id, name: u.name, email: u.email, role: u.role, password: '' };
+      this.userEdit = { id: u.id, name: u.name, email: u.email, role: u.role, password: '', passwordVisible: false, justGenerated: false };
       this.modal = 'user-edit';
     },
+    generatePassword() {
+      const charset = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
+      const symbols = '!@#$%&*+-=?';
+      const buf = new Uint32Array(14);
+      crypto.getRandomValues(buf);
+      let pw = '';
+      for (let i = 0; i < 14; i++) pw += charset[buf[i] % charset.length];
+      // Sprinkle in 2 symbols at random positions
+      const sym = new Uint32Array(2);
+      crypto.getRandomValues(sym);
+      const arr = pw.split('');
+      arr[sym[0] % arr.length] = symbols[sym[0] % symbols.length];
+      arr[sym[1] % arr.length] = symbols[sym[1] % symbols.length];
+      this.userEdit.password = arr.join('');
+      this.userEdit.passwordVisible = true;
+      this.userEdit.justGenerated = true;
+    },
+    async copyPassword() {
+      try {
+        await navigator.clipboard.writeText(this.userEdit.password);
+        this.toast('Passwort kopiert.', 'success');
+      } catch {
+        this.toast('Konnte Passwort nicht kopieren — bitte manuell kopieren.', 'error');
+      }
+    },
+    pwStrength(pw) {
+      if (!pw) return { pct: 0, label: '', color: '#e2e8f0' };
+      let score = 0;
+      if (pw.length >= 10) score++;
+      if (pw.length >= 14) score++;
+      if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) score++;
+      if (/[0-9]/.test(pw)) score++;
+      if (/[^a-zA-Z0-9]/.test(pw)) score++;
+      const levels = [
+        { pct: 20, label: 'Zu kurz',   color: '#dc2626' },
+        { pct: 40, label: 'Schwach',   color: '#f59e0b' },
+        { pct: 60, label: 'Mittel',    color: '#f59e0b' },
+        { pct: 80, label: 'Gut',       color: '#059669' },
+        { pct: 100, label: 'Sehr gut', color: '#059669' },
+      ];
+      return levels[Math.min(score, levels.length) - 1] || levels[0];
+    },
+    validateUserBeforeSave() {
+      const u = this.userEdit;
+      if (!u.name || u.name.trim().length < 1) return 'Name fehlt.';
+      if (!u.id) {
+        if (!u.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(u.email)) return 'Bitte gültige E-Mail-Adresse eingeben.';
+        if (!u.password || u.password.length < 10) return 'Passwort muss mindestens 10 Zeichen haben.';
+      } else if (u.password && u.password.length < 10) {
+        return 'Neues Passwort muss mindestens 10 Zeichen haben.';
+      }
+      return null;
+    },
     async saveUser() {
+      const validationError = this.validateUserBeforeSave();
+      if (validationError) { this.toast(validationError, 'error'); return; }
       this.loading = true;
       try {
         if (this.userEdit.id) {
-          const body = { name: this.userEdit.name, role: this.userEdit.role };
+          const body = { name: this.userEdit.name.trim(), role: this.userEdit.role };
           if (this.userEdit.password) body.password = this.userEdit.password;
           await api('/users/' + this.userEdit.id, { method: 'PATCH', body: JSON.stringify(body) });
         } else {
-          await api('/users', { method: 'POST', body: JSON.stringify(this.userEdit) });
+          await api('/users', { method: 'POST', body: JSON.stringify({
+            name: this.userEdit.name.trim(),
+            email: this.userEdit.email.trim().toLowerCase(),
+            role: this.userEdit.role,
+            password: this.userEdit.password,
+          }) });
         }
         this.toast('Benutzer gespeichert.', 'success');
         this.closeModal();
         await this.loadUsers();
       } catch (e) {
-        this.toast('Fehler: ' + (e.data?.error || e.message), 'error');
+        this.toast(humanizeApiError(e, 'user'), 'error');
       } finally { this.loading = false; }
     },
     async deleteUser(u) {
@@ -447,7 +507,7 @@ window.cms = function () {
         message: `„${u.name}" (${u.email}) wird unwiderruflich gelöscht.`,
         action: async () => {
           try { await api('/users/' + u.id, { method: 'DELETE' }); this.toast('Gelöscht.', 'success'); await this.loadUsers(); }
-          catch (e) { this.toast('Fehler: ' + (e.data?.error || e.message), 'error'); }
+          catch (e) { this.toast('Fehler: ' + humanizeApiError(e), 'error'); }
         },
       };
       this.modal = 'confirm';
@@ -459,6 +519,44 @@ window.cms = function () {
 
 function humanize(k) {
   return String(k).replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+const FIELD_LABELS_DE = {
+  email: 'E-Mail', name: 'Name', password: 'Passwort', role: 'Rolle',
+  type: 'Section-Typ', data: 'Daten', visible: 'Sichtbarkeit',
+  alt: 'Alt-Text', filename: 'Dateiname',
+};
+const ERROR_MESSAGES_DE = {
+  email_taken:        'Diese E-Mail-Adresse ist bereits vergeben.',
+  invalid_credentials:'E-Mail oder Passwort falsch.',
+  unauthorized:       'Bitte zuerst einloggen.',
+  forbidden:          'Du hast keine Berechtigung für diese Aktion.',
+  not_found:          'Eintrag nicht gefunden.',
+  last_admin:         'Der letzte Admin kann nicht entfernt werden.',
+  cannot_delete_self: 'Du kannst dich nicht selbst löschen.',
+  too_many_attempts:  'Zu viele Versuche. Bitte 1 Minute warten.',
+  file_too_large:     'Datei ist zu groß (max. 10 MB).',
+  mime_not_allowed:   'Dateityp nicht erlaubt (nur Bilder).',
+  unknown_type:       'Unbekannter Section-Typ.',
+};
+
+function humanizeApiError(e, context) {
+  const code = e?.data?.error;
+  if (code && ERROR_MESSAGES_DE[code]) return ERROR_MESSAGES_DE[code];
+  const issues = e?.data?.issues;
+  if (Array.isArray(issues) && issues.length > 0) {
+    const parts = issues.slice(0, 3).map((iss) => {
+      const field = iss.path?.[0];
+      const label = (field && FIELD_LABELS_DE[field]) || field || 'Feld';
+      if (iss.code === 'too_small' && iss.minimum) return `${label}: mindestens ${iss.minimum} Zeichen.`;
+      if (iss.code === 'invalid_string' && iss.validation === 'email') return `${label}: ungültige E-Mail-Adresse.`;
+      if (iss.code === 'invalid_type') return `${label}: erwartet ${iss.expected}, war ${iss.received}.`;
+      return `${label}: ${iss.message}`;
+    });
+    return parts.join(' · ');
+  }
+  if (code) return code;
+  return e?.message || 'Unbekannter Fehler.';
 }
 
 function cloneEmpty(template) {
