@@ -1,0 +1,32 @@
+{
+  "name": "cms-template",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "description": "Lightweight section-based CMS template — Hono + SQLite + Alpine.js, single Docker container.",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "tsx watch server/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/server/index.js",
+    "migrate": "tsx server/scripts/migrate.ts",
+    "seed": "tsx server/scripts/seed.ts"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.13.0",
+    "alpinejs": "^3.14.1",
+    "better-sqlite3": "^11.3.0",
+    "bcrypt": "^5.1.1",
+    "hono": "^4.6.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.11",
+    "@types/bcrypt": "^5.0.2",
+    "@types/node": "^22.7.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  }
+}
